@@ -1,0 +1,6 @@
+{
+  "name": "Ethio Matric Prep",
+  "description": "Interactive Ethiopian Grade 12 Matric preparation platform with premium membership tiers, mock exams, performance tracking, dynamic subjects, and detailed explanations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
