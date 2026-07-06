@@ -457,7 +457,16 @@ export const AdminPage: React.FC = () => {
     try {
       let parsedArray: any[] = [];
       try {
-        parsedArray = JSON.parse(bulkImportText);
+        const parsed = JSON.parse(bulkImportText);
+        parsedArray = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed?.questions)
+            ? parsed.questions
+            : Array.isArray(parsed?.data)
+              ? parsed.data
+              : Array.isArray(parsed?.items)
+                ? parsed.items
+                : [];
       } catch {
         // Fallback simple line CSV parser
         const lines = bulkImportText.trim().split('\n');
@@ -480,15 +489,29 @@ export const AdminPage: React.FC = () => {
         });
       }
 
-      if (!Array.isArray(parsedArray)) {
+      if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
         throw new Error('Parsed format is not an array of questions');
       }
 
-      // Automatically attach plan selection if missing
-      parsedArray = parsedArray.map(q => ({ ...q, plan_id: q.plan_id || bulkPlanId }));
+      const normalizedQuestions = parsedArray.map((q: any) => ({
+        ...q,
+        subject_id: q.subject_id ?? q.subjectId ?? q.subject ?? q.subject_name ?? '',
+        topic_id: q.topic_id ?? q.topicId ?? q.topic ?? q.topic_name ?? '',
+        question: q.question ?? q.question_text ?? q.prompt ?? q.statement ?? q.text ?? '',
+        option_a: q.option_a ?? q.optionA ?? q.option1 ?? q.option_1 ?? q.a ?? '',
+        option_b: q.option_b ?? q.optionB ?? q.option2 ?? q.option_2 ?? q.b ?? '',
+        option_c: q.option_c ?? q.optionC ?? q.option3 ?? q.option_3 ?? q.c ?? '',
+        option_d: q.option_d ?? q.optionD ?? q.option4 ?? q.option_4 ?? q.d ?? '',
+        correct_answer: q.correct_answer ?? q.correctAnswer ?? q.answer ?? q.correct_option ?? q.correctOption ?? '',
+        explanation: q.explanation ?? q.explanation_text ?? q.explanationText ?? '',
+        reference: q.reference ?? q.reference_text ?? q.referenceText ?? '',
+        hint: q.hint ?? q.hint_text ?? q.hintText ?? '',
+        estimated_time: q.estimated_time ?? q.estimatedTime ?? q.time ?? 60,
+        plan_id: q.plan_id ?? q.planId ?? bulkPlanId,
+      }));
 
-      await api.importQuestions(parsedArray);
-      alert(`Successfully imported ${parsedArray.length} questions in bulk!`);
+      await api.importQuestions(normalizedQuestions);
+      alert(`Successfully imported ${normalizedQuestions.length} questions in bulk!`);
       setShowImportModal(false);
       setBulkImportText('');
       loadQuestions();

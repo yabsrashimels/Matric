@@ -59,9 +59,9 @@ export const DashboardPage: React.FC = () => {
   return (
     <div>
       <div style={{ marginBottom: '2.5rem' }}>
-        <h1 className="title-main">Performance Dashboard</h1>
+        <h1 className="title-main">Learning Dashboard</h1>
         <p className="subtitle-main">
-          Monitor your study statistics, review unlocked accomplishments, and verify your rank on the national prep board.
+          Track your preparation progress, review your achievements, and stay motivated as you move closer to exam readiness.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="stats-info">
             <h3>{progress.streak} Days</h3>
-            <p>Active Streak</p>
+            <p>Study Streak</p>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="stats-info">
             <h3>{progress.xp} XP</h3>
-            <p>Total XP Earned</p>
+            <p>Total Experience Points</p>
           </div>
         </div>
       </div>
@@ -116,7 +116,7 @@ export const DashboardPage: React.FC = () => {
             <div className="stats-container" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
               <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '12px' }}>
                 <h4 style={{ fontSize: '1.5rem', fontWeight: '700' }}>{totalAnswered}</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Questions Answered</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Questions Practiced</p>
               </div>
               <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '12px' }}>
                 <h4 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--ethio-green)' }}>{progress.correctAnswersCount}</h4>
@@ -124,14 +124,14 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '12px' }}>
                 <h4 style={{ fontSize: '1.5rem', fontWeight: '700', color: accuracyPercent >= 60 ? 'var(--ethio-green)' : 'var(--ethio-red)' }}>{accuracyPercent}%</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Global Accuracy</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Accuracy Rate</p>
               </div>
             </div>
 
             {/* Daily Goal bar */}
             <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem' }}>
-                <span>Daily Challenge Goal ({progress.dailyXp} / {progress.dailyGoal} XP)</span>
+                <span>Daily Study Goal ({progress.dailyXp} / {progress.dailyGoal} XP)</span>
                 <span>{dailyGoalPercent}%</span>
               </div>
               <div className="subject-progress-bar" style={{ height: '8px' }}>
@@ -142,7 +142,7 @@ export const DashboardPage: React.FC = () => {
 
           {/* Strong vs Weak Subjects list */}
           <div className="card">
-            <h3 style={{ fontWeight: '600', marginBottom: '1.25rem' }}>Curriculum Performance Mapping</h3>
+            <h3 style={{ fontWeight: '600', marginBottom: '1.25rem' }}>Subject Performance Overview</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
@@ -158,7 +158,7 @@ export const DashboardPage: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No strong areas logged yet. Answer more questions!</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No strong subjects recorded yet. Keep practicing to build confidence.</p>
                 )}
               </div>
 
@@ -175,14 +175,14 @@ export const DashboardPage: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No weak areas identified. Good job!</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Great progress. Your current results look strong.</p>
                 )}
               </div>
 
               {unattemptedSubjects.length > 0 && (
                 <div style={{ marginTop: '0.5rem' }}>
                   <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                    📚 Unexplored Subjects
+                    📚 Subjects to Explore
                   </h4>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {unattemptedSubjects.map((s, idx) => (
@@ -200,10 +200,10 @@ export const DashboardPage: React.FC = () => {
         {/* Right Side: Local Leaderboard */}
         <div className="card">
           <h3 style={{ fontWeight: '600', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sparkles size={20} style={{ color: 'var(--ethio-yellow)' }} /> Local Prep Leaderboard
+            <Sparkles size={20} style={{ color: 'var(--ethio-yellow)' }} /> Community Prep Leaderboard
           </h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            Gain XP in Mock Exams and practice pools to outperform fellow students across the country.
+            Earn experience points through mock exams and practice sessions to compare your progress with fellow students across the country.
           </p>
           
           <table className="leaderboard-table">
@@ -242,10 +242,10 @@ export const DashboardPage: React.FC = () => {
       {/* Accomplishments / Badges Locker */}
       <div className="card">
         <h3 style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Award size={22} style={{ color: 'var(--ethio-green)' }} /> Unlocked Badges Locker
+          <Award size={22} style={{ color: 'var(--ethio-green)' }} /> Achievement Locker
         </h3>
         <p className="subtitle-main" style={{ marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-          Accomplish curriculum goals, complete exam sheets, and maintain streaks to claim your medals.
+          Reach new milestones, complete practice sets, and maintain your streak to unlock meaningful achievements.
         </p>
 
         <div className="badges-container">

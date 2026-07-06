@@ -31,22 +31,22 @@ export const SignupPage: React.FC = () => {
 
     // Form Validation
     if (!fullName || !email || !phone || !password || !confirmPassword) {
-      setError('Please fill in all required fields');
+      setError('Please complete all required fields to create your account.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match. Please enter the same password in both fields.');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Your password should be at least 6 characters long.');
       return;
     }
 
     if (!validatePhone(phone)) {
-      setError('Phone number must be in international format (e.g. +251912345678)');
+      setError('Please enter your phone number in international format, for example +251912345678.');
       return;
     }
 
@@ -68,14 +68,19 @@ export const SignupPage: React.FC = () => {
         phone,
       });
 
-      if (data.success) {
-        setSuccess('Registration successful! Redirecting to login page...');
+      const payload = data?.data ?? data;
+      const isSuccessful = data?.success === true || Boolean(payload?.token || payload?.user);
+
+      if (isSuccessful) {
+        setSuccess('Account created successfully. You will be redirected to the login page shortly.');
         setTimeout(() => {
           setActivePage('login');
         }, 2000);
+      } else {
+        setError(data?.message || 'We could not create your account. Please review your details and try again.');
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please check your credentials and try again.');
+      setError(err.message || 'We could not create your account. Please review your details and try again.');
     } finally {
       setLoading(false);
     }

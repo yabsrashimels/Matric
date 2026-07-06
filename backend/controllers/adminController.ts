@@ -636,33 +636,89 @@ export const bulkUpdateQuestions = async (req: Request, res: Response, next: Nex
 };
 
 export const importQuestions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { questions } = req.body;
-  if (!Array.isArray(questions) || questions.length === 0) {
+  const rawPayload = req.body;
+  const incomingQuestions = Array.isArray(rawPayload)
+    ? rawPayload
+    : Array.isArray(rawPayload?.questions)
+      ? rawPayload.questions
+      : Array.isArray(rawPayload?.data)
+        ? rawPayload.data
+        : Array.isArray(rawPayload?.items)
+          ? rawPayload.items
+          : [];
+
+  if (!Array.isArray(incomingQuestions) || incomingQuestions.length === 0) {
     res.status(400).json({ success: false, message: 'Please provide an array of questions' });
     return;
   }
-  try {
-    let importedCount = 0;
-    for (const q of questions) {
-      const {
-        subject_id,
-        topic_id,
-        year,
-        difficulty,
-        question,
-        option_a,
-        option_b,
-        option_c,
-        option_d,
-        correct_answer,
-        explanation,
-        reference,
-        hint,
-        estimated_time,
-        plan_id,
-      } = q;
 
-      if (!subject_id || !topic_id || !question || !option_a || !option_b || !option_c || !option_d || !correct_answer) {
+  try {
+    const subjectCache = new Map<string, number>();
+    const topicCache = new Map<string, number>();
+
+    const resolveSubjectId = async (value: any): Promise<number | null> => {
+      if (value === undefined || value === null || value === '') return null;
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+      const text = String(value).trim();
+      if (/^\d+$/.test(text)) return parseInt(text, 10);
+
+      const cacheKey = text.toLowerCase();
+      const cached = subjectCache.get(cacheKey);
+      if (cached) return cached;
+
+      const subjectRes = await db.query('SELECT id FROM subjects WHERE LOWER(name) = LOWER($1) LIMIT 1', [text]);
+      const resolvedId = subjectRes.rows[0]?.id ? parseInt(subjectRes.rows[0].id, 10) : null;
+      if (resolvedId) subjectCache.set(cacheKey, resolvedId);
+      return resolvedId;
+    };
+
+    const resolveTopicId = async (value: any, subjectId: number | null): Promise<number | null> => {
+      if (value === undefined || value === null || value === '') return null;
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+      const text = String(value).trim();
+      if (/^\d+$/.test(text)) return parseInt(text, 10);
+
+      const cacheKey = `${subjectId ?? 'none'}:${text.toLowerCase()}`;
+      const cached = topicCache.get(cacheKey);
+      if (cached) return cached;
+
+      const topicRes = subjectId
+        ? await db.query('SELECT id FROM topics WHERE LOWER(name) = LOWER($1) AND subject_id = $2 LIMIT 1', [text, subjectId])
+        : await db.query('SELECT id FROM topics WHERE LOWER(name) = LOWER($1) LIMIT 1', [text]);
+      const resolvedId = topicRes.rows[0]?.id ? parseInt(topicRes.rows[0].id, 10) : null;
+      if (resolvedId) topicCache.set(cacheKey, resolvedId);
+      return resolvedId;
+    };
+
+    const getFirstDefinedValue = (record: any, keys: string[]): any => {
+      for (const key of keys) {
+        const value = record?.[key];
+        if (value !== undefined && value !== null && value !== '') return value;
+      }
+      return undefined;
+    };
+
+    let importedCount = 0;
+    for (const q of incomingQuestions) {
+      const subjectId = await resolveSubjectId(getFirstDefinedValue(q, ['subject_id', 'subjectId', 'subject', 'subject_name']));
+      const topicId = await resolveTopicId(getFirstDefinedValue(q, ['topic_id', 'topicId', 'topic', 'topic_name']), subjectId);
+      const year = getFirstDefinedValue(q, ['year', 'exam_year', 'year_of_exam']);
+      const difficulty = getFirstDefinedValue(q, ['difficulty', 'difficulty_level', 'difficultyLevel']);
+      const question = getFirstDefinedValue(q, ['question', 'question_text', 'prompt', 'statement', 'text']);
+      const optionA = getFirstDefinedValue(q, ['option_a', 'optionA', 'option1', 'option_1', 'a']);
+      const optionB = getFirstDefinedValue(q, ['option_b', 'optionB', 'option2', 'option_2', 'b']);
+      const optionC = getFirstDefinedValue(q, ['option_c', 'optionC', 'option3', 'option_3', 'c']);
+      const optionD = getFirstDefinedValue(q, ['option_d', 'optionD', 'option4', 'option_4', 'd']);
+      const correctAnswer = getFirstDefinedValue(q, ['correct_answer', 'correctAnswer', 'answer', 'correct_option', 'correctOption']);
+      const explanation = getFirstDefinedValue(q, ['explanation', 'explanation_text', 'explanationText']);
+      const reference = getFirstDefinedValue(q, ['reference', 'reference_text', 'referenceText']);
+      const hint = getFirstDefinedValue(q, ['hint', 'hint_text', 'hintText']);
+      const estimatedTime = getFirstDefinedValue(q, ['estimated_time', 'estimatedTime', 'time']);
+      const planId = getFirstDefinedValue(q, ['plan_id', 'planId']);
+
+      if (!subjectId || !topicId || !question || !optionA || !optionB || !optionC || !optionD || !correctAnswer) {
         continue;
       }
 
@@ -673,25 +729,25 @@ export const importQuestions = async (req: Request, res: Response, next: NextFun
           explanation, reference, hint, estimated_time, plan_id
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
-          parseInt(subject_id),
-          parseInt(topic_id),
-          parseInt(year || '2024'),
+          subjectId,
+          topicId,
+          parseInt(String(year || '2024')),
           difficulty || 'Medium',
           question,
-          option_a,
-          option_b,
-          option_c,
-          option_d,
-          correct_answer,
+          optionA,
+          optionB,
+          optionC,
+          optionD,
+          correctAnswer,
           explanation || null,
           reference || null,
           hint || null,
-          parseInt(estimated_time || '60'),
-          parseInt(plan_id || '1'),
+          parseInt(String(estimatedTime || '60')),
+          parseInt(String(planId || '1')),
         ]
       );
       importedCount++;
     }
-    res.status(201).json({ success: true, message: `Imported ${importedCount} out of ${questions.length} questions successfully` });
+    res.status(201).json({ success: true, message: `Imported ${importedCount} out of ${incomingQuestions.length} questions successfully` });
   } catch (error) { next(error); }
 };

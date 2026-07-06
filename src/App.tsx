@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { HomePage } from './pages/HomePage';
 import { QUESTIONS } from './data/questions';
@@ -38,6 +38,9 @@ const AppContent: React.FC = () => {
   } = useApp();
   
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const sidebarNavRef = useRef<HTMLDivElement | null>(null);
+  const [indicatorTop, setIndicatorTop] = useState<number>(0);
+  const [indicatorVisible, setIndicatorVisible] = useState<boolean>(false);
 
   const totalQuestionsCount = QUESTIONS.length;
   const completedQuestionsCount = progress.completedQuestionIds.length;
@@ -112,6 +115,28 @@ const AppContent: React.FC = () => {
     setMobileSidebarOpen(false);
   };
 
+  // Position the animated horizontal active indicator
+  useEffect(() => {
+    const updateIndicator = () => {
+      const activeEl = document.getElementById(`nav-link-${activePage}`);
+      const container = sidebarNavRef.current;
+      if (activeEl && container) {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = activeEl.getBoundingClientRect();
+        const top = elRect.top - containerRect.top + (elRect.height / 2) - 3; // center align (indicator height ~6px)
+        setIndicatorTop(top);
+        setIndicatorVisible(true);
+      } else {
+        setIndicatorVisible(false);
+      }
+    };
+
+    // update initially and on resize
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [activePage, mobileSidebarOpen]);
+
   // Generate confetti pieces
   const renderConfetti = () => {
     if (!showConfetti) return null;
@@ -164,7 +189,7 @@ const AppContent: React.FC = () => {
               <span style={{ fontSize: '0.7rem' }}>🇪🇹</span>
             </div>
           </div>
-          <span className="brand-name">Ethio Matric</span>
+          <span className="brand-name">Ethio Matric Prep</span>
         </div>
         <div className="mobile-lang-selector" style={{ marginRight: '0.5rem' }}>
           <button 
@@ -211,7 +236,12 @@ const AppContent: React.FC = () => {
           <span className="brand-name">Ethio Matric Prep</span>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" ref={sidebarNavRef}>
+          <div
+            className="sidebar-indicator"
+            style={{ top: `${indicatorTop}px`, opacity: indicatorVisible ? 1 : 0 }}
+            aria-hidden="true"
+          />
           {getNavItems().map((item) => (
             <button
               key={item.id}
@@ -246,7 +276,7 @@ const AppContent: React.FC = () => {
           <div className="user-card-header">
             <span className="user-avatar">⭐</span>
             <div className="user-info">
-              <h4>Level {progress.level} Graduate</h4>
+              <h4>Level {progress.level} Scholar</h4>
               <p>{progress.xp} Total XP</p>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.15rem' }}>

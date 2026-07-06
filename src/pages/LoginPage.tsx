@@ -11,7 +11,7 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Please complete both fields to continue.');
       return;
     }
 
@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'We could not sign you in. Please review your email and password and try again.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
             </button>
           </p>
           <div className="admin-demo-tip" style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '4px', fontSize: '0.75rem', border: '1px dashed var(--ethio-red)' }}>
-            <strong>Demo Accounts:</strong><br />
+            <strong>Demo access:</strong><br />
             • Admin: yabsrashimels531@gmail.com / Yeabsra@123<br />
             • Student: student@matricprep.com / password123
           </div>

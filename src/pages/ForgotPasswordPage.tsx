@@ -32,10 +32,10 @@ export const ForgotPasswordPage: React.FC = () => {
           <div className="auth-success-banner" id="reset-success-message">
             <span className="success-icon">✉️</span>
             <p>
-              If an account exists for <strong>{email}</strong>, a password reset instruction link has been sent. Please check your inbox.
+              If an account exists for <strong>{email}</strong>, we have sent password recovery instructions to your inbox.
             </p>
             <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.8 }}>
-              (Note: SMTP dispatch backend is prepared and will be fully wired upon domain migration).
+              If you do not see the email shortly, please check your spam folder or try again with the correct address.
             </p>
             <button
               onClick={() => setActivePage('login')}

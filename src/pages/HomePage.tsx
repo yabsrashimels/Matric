@@ -27,18 +27,18 @@ export const HomePage: React.FC = () => {
       <section className="hero-section" id="hero-banner">
         <div>
           <h1 className="hero-title">
-            Prepare for Ethiopia <br />
-            <span>Grade 12 Matric</span> Examination
+            Prepare with confidence for Ethiopia's <br />
+            <span>Grade 12 National Matric</span> Examination
           </h1>
           <p className="hero-subtitle">
-            Practice official-style exam questions with step-by-step reasoning, instant answers, historical notes, and interactive tracking tailored to the Ethiopian curriculum.
+            Practice with structured revision, detailed explanations, mock exams, and progress tracking designed for the Ethiopian curriculum and the demands of national examination preparation.
           </p>
           <div className="hero-actions">
             <button className="btn btn-primary" onClick={() => setActivePage('subjects')}>
-              Start Learning <ArrowRight size={18} />
+              Start Your Learning Journey <ArrowRight size={18} />
             </button>
             <button className="btn btn-secondary" onClick={startPracticing}>
-              Practice All Questions
+              Practice with Purpose
             </button>
           </div>
         </div>
@@ -101,10 +101,10 @@ export const HomePage: React.FC = () => {
       {/* Subjects Quick Access */}
       <section className="section-header">
         <h2 className="section-title">
-          <Sparkles size={22} style={{ color: 'var(--ethio-green)' }} /> Featured Subjects
+          <Sparkles size={22} style={{ color: 'var(--ethio-green)' }} /> Popular Subjects
         </h2>
         <button className="btn btn-secondary btn-sm" onClick={() => setActivePage('subjects')}>
-          View All Subjects
+          Explore All Subjects
         </button>
       </section>
 
@@ -155,24 +155,24 @@ export const HomePage: React.FC = () => {
             <div className="feature-icon-wrapper" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--ethio-green)' }}>
               <BookOpen size={20} />
             </div>
-            <h3>Practice by Subject</h3>
-            <p>Target specific areas like Calculus, Mechanics, or Ethiopian History to build your focus areas.</p>
+            <h3>Study by Subject</h3>
+            <p>Focus on core areas such as mathematics, physics, and Ethiopian history with organized revision paths.</p>
           </div>
 
           <div className="card feature-card" id="feat-instant-answers">
             <div className="feature-icon-wrapper" style={{ backgroundColor: 'var(--warning-light)', color: '#b45309' }}>
               <Target size={20} />
             </div>
-            <h3>Instant Explanations</h3>
-            <p>Learn immediately after each answer with comprehensive, step-by-step math proofs and historical references.</p>
+            <h3>Clear Explanations</h3>
+            <p>Understand each answer with concise, step-by-step guidance that strengthens your confidence and study habits.</p>
           </div>
 
           <div className="card feature-card" id="feat-quiz-mode">
             <div className="feature-icon-wrapper" style={{ backgroundColor: 'var(--danger-light)', color: 'var(--ethio-red)' }}>
               <Award size={20} />
             </div>
-            <h3>Full Simulated Mock</h3>
-            <p>Take full-length mock examinations with automated timers to prepare yourself for real matric exam conditions.</p>
+            <h3>Realistic Mock Exams</h3>
+            <p>Practice under timed conditions with full-length mock exams that mirror the pressure of the real matric experience.</p>
           </div>
         </div>
       </section>

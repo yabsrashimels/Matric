@@ -3,13 +3,13 @@ export type Language = 'en' | 'am';
 export const translations = {
   en: {
     // Navigation / Sidebar
-    dashboard: 'User Dashboard',
-    practice: 'Practice Hub',
+    dashboard: 'Student Dashboard',
+    practice: 'Practice Center',
     mockExams: 'Mock Exams',
     planner: 'Study Planner',
     leaderboard: 'Leaderboard',
-    admin: 'Admin Portal',
-    settings: 'Settings',
+    admin: 'Admin Center',
+    settings: 'Preferences',
     login: 'Login',
     signup: 'Sign Up',
     logout: 'Logout',
@@ -18,8 +18,8 @@ export const translations = {
     paymentHistory: 'Payment History',
     
     // Auth Pages
-    welcomeBack: 'Welcome Back',
-    signInSubtitle: 'Sign in to access your custom learning path',
+    welcomeBack: 'Welcome Back, Scholar',
+    signInSubtitle: 'Sign in to continue your focused matric preparation journey',
     emailLabel: 'Email Address',
     passwordLabel: 'Password',
     confirmPasswordLabel: 'Confirm Password',
@@ -31,11 +31,11 @@ export const translations = {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     forgotPassword: 'Forgot Password?',
-    registerTitle: 'Create Student Account',
-    registerSubtitle: 'Join thousands of Ethiopian students preparing for Grade 12 Matric',
-    forgotPasswordTitle: 'Reset Password',
-    forgotPasswordSubtitle: 'Enter your email and we will guide you to restore access',
-    sendResetLink: 'Send Reset Instructions',
+    registerTitle: 'Create Your Account',
+    registerSubtitle: 'Join thousands of Ethiopian students preparing with confidence for the Grade 12 National Matric Examination',
+    forgotPasswordTitle: 'Reset Your Password',
+    forgotPasswordSubtitle: 'Enter your email address and we will send recovery instructions to help you regain access.',
+    sendResetLink: 'Send Recovery Instructions',
     backToLogin: 'Back to Login',
     submitting: 'Processing...',
     
@@ -54,19 +54,19 @@ export const translations = {
     saveChanges: 'Save Changes',
     
     // Dashboard Cards / Stats
-    statsOverview: 'Performance Overview',
+    statsOverview: 'Progress Overview',
     level: 'Level',
     xp: 'Total XP',
     streak: 'Day Streak',
     completedQuestions: 'Completed Questions',
     accuracy: 'Accuracy Rate',
     dailyXpGoal: 'Daily XP Goal',
-    weeklyPlanner: 'Weekly Study Planner',
-    recentActivity: 'Recent Quiz History',
+    weeklyPlanner: 'Weekly Study Plan',
+    recentActivity: 'Recent Learning Activity',
     soundSettings: 'Audio sound effects',
     themeSettings: 'Visual Dark Mode',
-    resetNotice: 'Danger Zone',
-    resetButton: 'Reset All Local Progress',
+    resetNotice: 'Reset Options',
+    resetButton: 'Reset Local Progress',
     
     // Practice Screen
     chooseSubject: 'Select Subject',
@@ -85,7 +85,7 @@ export const translations = {
     notes: 'My Notes',
     saveNote: 'Save Private Note',
     lockedContent: 'Content Locked',
-    lockedMessage: 'This topic requires a Premium or Advanced membership. Upgrade now to get instant lifetime access.',
+    lockedMessage: 'This topic requires a Premium or Advanced membership. Upgrade to unlock full access and continue your preparation with confidence.',
     
     // Mock Exams
     mockExamsTitle: 'Mock Exam Simulator',
@@ -104,7 +104,7 @@ export const translations = {
     paymentReference: 'Transaction Reference Number',
     uploadReceipt: 'Upload Screenshot / Receipt URL',
     submitPayment: 'Submit Proof of Payment',
-    paymentSuccess: 'Payment proof submitted! Our administrators are validating your request. This typically takes 15-30 minutes.',
+    paymentSuccess: 'Your payment proof has been received. Our team is reviewing it and will confirm your membership shortly.',
     currentMembership: 'Current Active Membership',
     
     // Admin Dashboard
@@ -161,8 +161,8 @@ export const translations = {
     paymentHistory: 'የክፍያ ታሪክ',
     
     // Auth Pages
-    welcomeBack: 'እንኳን ደህና መጡ',
-    signInSubtitle: 'ብጁ የጥናት ጉዞዎን ለመቀጠል እባክዎ ይግቡ',
+    welcomeBack: 'እንኳን ደህና መጡ ተማሪ',
+    signInSubtitle: 'ለተከታታይ የማትሪክ ዝግጅት ለመቀጠል እባክዎ ይግቡ',
     emailLabel: 'የኢሜል አድራሻ',
     passwordLabel: 'የይለፍ ቃል',
     confirmPasswordLabel: 'የይለፍ ቃል ያረጋግጡ',
@@ -174,11 +174,11 @@ export const translations = {
     dontHaveAccount: 'መለያ የለዎትም?',
     alreadyHaveAccount: 'ቀደም ሲል መለያ አለዎት?',
     forgotPassword: 'የይለፍ ቃል ረሱ?',
-    registerTitle: 'የተማሪ መለያ ይፍጠሩ',
-    registerSubtitle: 'ለ12ኛ ክፍል ማትሪክ ፈተና የሚዘጋጁ በሺዎች የሚቆጠሩ የኢትዮጵያ ተማሪዎችን ይቀላቀሉ',
-    forgotPasswordTitle: 'የይለፍ ቃል መልሶ ማግኛ',
-    forgotPasswordSubtitle: 'ኢሜልዎን ያስገቡ እና መዳረሻን እንዴት ወደነበረበት መመለስ እንደሚችሉ እንመራዎታለን',
-    sendResetLink: 'መመሪያዎችን ላክ',
+    registerTitle: 'መለያዎን ይፍጠሩ',
+    registerSubtitle: 'ለ12ኛ ክፍል የብሔራዊ ማትሪክ ፈተና በመደረግ ላይ እንዲዘጋጁ በሺዎች የሚቆጠሩ የኢትዮጵያ ተማሪዎችን ይቀላቀሉ',
+    forgotPasswordTitle: 'የይለፍ ቃልዎን ዳግም ያስጀምሩ',
+    forgotPasswordSubtitle: 'ኢሜልዎን ያስገቡ እና መዳረሻዎን እንደገና ለማግኘት የማጽናኛ መመሪያዎችን እንልክሎታለን።',
+    sendResetLink: 'የመልሶ መስጫ መመሪያዎች ላክ',
     backToLogin: 'ወደ መግቢያ ተመለስ',
     submitting: 'በማከናወን ላይ...',
     

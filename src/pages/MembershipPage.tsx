@@ -408,9 +408,9 @@ export const MembershipPage: React.FC = () => {
 
       {/* Header section */}
       <div className="m-header-section">
-        <h1 className="m-header-title">Membership Plans</h1>
+        <h1 className="m-header-title">Choose Your Learning Path</h1>
         <p className="m-header-subtitle">
-          Choose the right track for your learning journey. Level up your prep and secure your spot in the Grade 12 National Matric Exams with our lifetime packages.
+          Select the support level that matches your preparation goals. Whether you are building confidence or aiming for top results, each plan is designed to strengthen your exam readiness.
         </p>
 
         {/* Current Active Plan Status */}
@@ -427,7 +427,7 @@ export const MembershipPage: React.FC = () => {
         <div className="m-progress-header">
           <span className="m-progress-title">
             <Coins size={18} style={{ color: 'var(--ethio-yellow)' }} />
-            Active Platform Unlock Capability
+            Your Current Access Level
           </span>
           <span className="m-progress-percent">{PLAN_PERCENTAGES[activePlanId]}%</span>
         </div>
@@ -437,9 +437,9 @@ export const MembershipPage: React.FC = () => {
         <div className="m-progress-footer">
           <AlertCircle size={14} style={{ color: 'var(--text-tertiary)' }} />
           <span>
-            {activePlanId === 1 && "You're on the Free plan. Upgrade to Premium or Advanced to unlock 100% of national exam papers and high-yield study aids."}
-            {activePlanId === 2 && "Awesome! You have unlocked 85% of content. Upgrade to Advanced to gain absolute complete coverage of newly added materials and priority expert guidance."}
-            {activePlanId === 3 && "Outstanding! You have complete 100% unrestricted access to all existing and future subjects, premium features, and direct admin priority assistance."}
+            {activePlanId === 1 && "You are on the Free plan. Upgrade to Premium or Advanced to unlock full exam practice resources and deeper study support."}
+            {activePlanId === 2 && "You have strong access to core preparation tools. Upgrade to Advanced for broader coverage, richer practice materials, and more complete support."}
+            {activePlanId === 3 && "You have full access to the platform's most complete learning resources and preparation support."}
           </span>
         </div>
       </div>
@@ -455,7 +455,7 @@ export const MembershipPage: React.FC = () => {
           style={hoveredPlan === 'free' ? { transform: 'translateY(-8px)', borderColor: 'var(--border-color)', boxShadow: '0 12px 30px var(--shadow-hover)' } : {}}
         >
           <div className="m-plan-tier">Starter</div>
-          <h2 className="m-plan-name">Free Plan</h2>
+          <h2 className="m-plan-name">Free Access</h2>
           
           <div className="m-price-container">
             <span className="m-price-amount">0</span>
@@ -466,15 +466,15 @@ export const MembershipPage: React.FC = () => {
           <ul className="m-features-list">
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Basic access to standard subjects & topics</span>
+              <span>Access core subjects and topics to begin your preparation</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>General Grade 12 National Exam syllabus outline</span>
+              <span>Review the Grade 12 national syllabus structure</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Standard interactive study planner</span>
+              <span>Use a simple study planner to organize your revision</span>
             </li>
             <li className="m-feature-item">
               <Lock className="m-feature-icon locked" size={18} />
@@ -495,7 +495,7 @@ export const MembershipPage: React.FC = () => {
           </ul>
 
           <button className="m-cta-btn m-btn-free" disabled={true}>
-            {activePlanId === 1 ? 'Current Active Tier' : 'Default Starter Tier'}
+            {activePlanId === 1 ? 'Current Plan' : 'Start with Free Access'}
           </button>
         </div>
 
@@ -508,7 +508,7 @@ export const MembershipPage: React.FC = () => {
         >
           <div className="m-card-ribbon m-ribbon-popular">Most Popular</div>
           <div className="m-plan-tier">Scholar Core</div>
-          <h2 className="m-plan-name">Premium Plan</h2>
+          <h2 className="m-plan-name">Premium Learning</h2>
           
           <div className="m-price-container">
             <span className="m-price-amount">100</span>
@@ -519,37 +519,37 @@ export const MembershipPage: React.FC = () => {
           <ul className="m-features-list">
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span><strong>Unlock Your Full Learning Potential! 🚀</strong></span>
+              <span><strong>Unlock deeper practice and stronger support</strong></span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Get lifetime access to all Premium subjects and topics.</span>
+              <span>Access a wider range of premium subjects and topics.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Access detailed explanations and solutions.</span>
+              <span>Receive detailed explanations and worked solutions.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Take unlimited Premium mock exams.</span>
+              <span>Take unlimited mock exams to sharpen your exam readiness.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Track your progress with advanced analytics.</span>
+              <span>Monitor your progress with more detailed performance insights.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Receive future Premium content updates for free.</span>
+              <span>Receive future content updates as they are added.</span>
             </li>
             <li className="m-feature-item">
               <Lock className="m-feature-icon locked" size={18} />
-              <span className="m-feature-text disabled">Exclusive Advanced expert-tier questions & explanations</span>
+              <span className="m-feature-text disabled">Exclusive expert-level questions and advanced explanations</span>
             </li>
           </ul>
 
           {activePlanId === 2 ? (
             <button className="m-cta-btn m-btn-current" disabled={true}>
-              Active Premium Tier ✓
+              Active Premium Plan ✓
             </button>
           ) : activePlanId > 2 ? (
             <button className="m-cta-btn m-btn-free" disabled={true}>
@@ -574,7 +574,7 @@ export const MembershipPage: React.FC = () => {
         >
           <div className="m-card-ribbon m-ribbon-value">Best Value</div>
           <div className="m-plan-tier">Absolute Mastery</div>
-          <h2 className="m-plan-name">Advanced Plan</h2>
+          <h2 className="m-plan-name">Advanced Mastery</h2>
           
           <div className="m-price-container">
             <span className="m-price-amount">500</span>
@@ -585,23 +585,23 @@ export const MembershipPage: React.FC = () => {
           <ul className="m-features-list">
             <li className="m-feature-item" style={{ color: 'var(--ethio-green)', fontWeight: '600' }}>
               <Star size={16} style={{ color: 'var(--ethio-yellow)', fill: 'var(--ethio-yellow)', marginTop: '0.15rem' }} />
-              <strong>The Ultimate Matric Success Package ⭐⭐⭐⭐⭐</strong>
+              <strong>The complete package for ambitious matric students ⭐⭐⭐⭐⭐</strong>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Everything included in Premium.</span>
+              <span>Everything included in Premium, with even deeper support.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Unlock every subject, topic, and future content.</span>
+              <span>Access every subject, topic, and future learning material.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Access exclusive Advanced questions and explanations.</span>
+              <span>Practice with exclusive advanced questions and explanations.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Premium mock exams with detailed performance analysis.</span>
+              <span>Take premium mock exams with detailed performance feedback.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
@@ -609,7 +609,7 @@ export const MembershipPage: React.FC = () => {
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
-              <span>Priority support.</span>
+              <span>Receive priority support whenever you need guidance.</span>
             </li>
             <li className="m-feature-item">
               <Check className="m-feature-icon unlocked" size={18} />
@@ -619,7 +619,7 @@ export const MembershipPage: React.FC = () => {
 
           {activePlanId === 3 ? (
             <button className="m-cta-btn m-btn-current" disabled={true}>
-              Active Advanced Tier ★★★★★
+              Active Advanced Plan ★★★★★
             </button>
           ) : (
             <button 
@@ -635,7 +635,7 @@ export const MembershipPage: React.FC = () => {
 
       {/* Comprehensive Features Comparison Matrix */}
       <div className="m-matrix-section">
-        <h2 className="m-matrix-title">Compare Features & Learning Bounds</h2>
+        <h2 className="m-matrix-title">Compare Features and Learning Support</h2>
         
         <div className="m-table-wrapper">
           <table className="m-table">

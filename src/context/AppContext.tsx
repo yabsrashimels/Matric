@@ -241,12 +241,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       if (data.success && data.data) {
         const { token: userToken, user: userData } = data.data;
-        setToken(userToken);
-        setUser(userData);
-        localStorage.setItem('ethio_token', userToken);
-        localStorage.setItem('ethio_user', JSON.stringify(userData));
-        if (userData.role) localStorage.setItem('ethio_role', userData.role);
-        localStorage.setItem('ethio_user_name', `${userData.first_name || ''} ${userData.last_name || ''}`.trim());
+        const safeUser = userData && typeof userData === 'object' ? userData : null;
+
+        setToken(userToken || null);
+        setUser(safeUser);
+        if (userToken) {
+          localStorage.setItem('ethio_token', userToken);
+        } else {
+          localStorage.removeItem('ethio_token');
+        }
+
+        if (safeUser) {
+          localStorage.setItem('ethio_user', JSON.stringify(safeUser));
+          if (safeUser.role) localStorage.setItem('ethio_role', safeUser.role);
+          localStorage.setItem('ethio_user_name', `${safeUser.first_name || ''} ${safeUser.last_name || ''}`.trim());
+        } else {
+          localStorage.removeItem('ethio_user');
+          localStorage.removeItem('ethio_role');
+          localStorage.removeItem('ethio_user_name');
+        }
         return data;
       }
       throw new Error(data.message || 'Login failed');
