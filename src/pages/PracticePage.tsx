@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { QUESTIONS, SUBJECTS } from '../data/questions';
+import { api } from '../lib/api';
 import { Question } from '../types';
 import { 
   ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Lightbulb, 
@@ -14,6 +15,10 @@ export const PracticePage: React.FC = () => {
     playCorrectSound, playIncorrectSound, triggerConfetti, 
     selectedSubject, setSelectedSubject 
   } = useApp();
+
+  const [questionPool, setQuestionPool] = useState<Question[]>(QUESTIONS);
+  const [subjectOptions, setSubjectOptions] = useState<string[]>(SUBJECTS.map((subject) => subject.name));
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,9 +45,57 @@ export const PracticePage: React.FC = () => {
     }
   }, [selectedSubject]);
 
+  useEffect(() => {
+    const loadQuestions = async () => {
+      setIsLoadingQuestions(true);
+      try {
+        const response = await api.getQuestions({ limit: 200 });
+        const rows = Array.isArray(response?.data?.questions) ? response.data.questions : [];
+
+        if (rows.length > 0) {
+          const mappedQuestions = rows.map((row: any) => {
+            const options = [row.option_a, row.option_b, row.option_c, row.option_d].filter((value: string | null | undefined) => Boolean(value));
+            const correctLetter = String(row.correct_answer || '').toUpperCase();
+            const answerIndex = ['A', 'B', 'C', 'D'].indexOf(correctLetter);
+            const correctAnswer = answerIndex >= 0 && answerIndex < options.length ? options[answerIndex] : (options[0] || '');
+
+            return {
+              id: Number(row.id),
+              subject: row.subject_name || row.subject || 'General',
+              topic: row.topic_name || row.topic || 'General',
+              difficulty: (row.difficulty || 'Medium') as 'Easy' | 'Medium' | 'Hard',
+              year: Number(row.year || new Date().getFullYear()),
+              question: row.question || 'No question text available',
+              options,
+              correctAnswer,
+              explanation: row.explanation || '',
+              incorrectExplanations: {},
+              reference: row.reference || '',
+              hint: row.hint || '',
+              time: row.estimated_time ? `${row.estimated_time} seconds` : '60 seconds',
+            } as Question;
+          });
+
+          setQuestionPool(mappedQuestions);
+          setSubjectOptions([...new Set(mappedQuestions.map((question) => question.subject).filter(Boolean))]);
+          setIsLoadingQuestions(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('Unable to load live question bank, using the bundled practice bank.', error);
+      }
+
+      setQuestionPool(QUESTIONS);
+      setSubjectOptions(SUBJECTS.map((subject) => subject.name));
+      setIsLoadingQuestions(false);
+    };
+
+    loadQuestions();
+  }, []);
+
   // Apply filters
   useEffect(() => {
-    let result = QUESTIONS;
+    let result = questionPool;
 
     // Subject
     if (subjectFilter !== 'All') {
@@ -83,7 +136,7 @@ export const PracticePage: React.FC = () => {
     setSelectedOption(null);
     setIsAnswered(false);
     setShowHint(false);
-  }, [subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds]);
+  }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds]);
 
   // Load saved note for the current question
   useEffect(() => {
@@ -195,6 +248,7 @@ export const PracticePage: React.FC = () => {
           </h1>
           <p className="subtitle-main" style={{ marginBottom: 0 }}>
             Solve matric questions, get step-by-step notes, and master specific topics. Use keyboard shortcuts <strong>[A, B, C, D]</strong> to choose options and <strong>[Enter]</strong> to submit.
+            {isLoadingQuestions && <span style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Loading the latest live question bank…</span>}
           </p>
         </div>
         <button 
@@ -231,7 +285,7 @@ export const PracticePage: React.FC = () => {
             <label>Subject</label>
             <select className="filter-select" value={subjectFilter} onChange={(e) => { setSubjectFilter(e.target.value); setSelectedSubject(e.target.value === 'All' ? null : e.target.value); }}>
               <option value="All">All Subjects</option>
-              {SUBJECTS.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+              {subjectOptions.map((subjectName) => <option key={subjectName} value={subjectName}>{subjectName}</option>)}
             </select>
           </div>
 

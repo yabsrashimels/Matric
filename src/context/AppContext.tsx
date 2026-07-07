@@ -193,9 +193,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const res = await fetch(endpoint, { ...options, headers });
-    const resData = await res.json();
+    const resData = await res.json().catch(() => ({ success: false, message: 'Server returned an invalid response.' }));
     if (!res.ok) {
-      throw new Error(resData.message || 'Server request failed');
+      throw new Error(resData?.message || 'Server request failed');
     }
     return resData;
   };
@@ -285,6 +285,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           phone_number: signupData.phone || '',
         }),
       });
+
+      // Auto-login on successful signup if backend returns token/user
+      if (data?.success && data?.data) {
+        const { token: userToken, user: userData } = data.data;
+        const safeUser = userData && typeof userData === 'object' ? userData : null;
+
+        if (!safeUser || !userToken) {
+          throw new Error('Registration succeeded but the server did not return a valid session.');
+        }
+
+        setToken(userToken || null);
+        setUser(safeUser);
+
+        if (userToken) localStorage.setItem('ethio_token', userToken);
+        if (safeUser) {
+          localStorage.setItem('ethio_user', JSON.stringify(safeUser));
+          if (safeUser.role) localStorage.setItem('ethio_role', safeUser.role);
+          localStorage.setItem('ethio_user_name', `${safeUser.first_name || ''} ${safeUser.last_name || ''}`.trim());
+        }
+      }
+
       return data;
     } catch (e: any) {
       console.error(e);

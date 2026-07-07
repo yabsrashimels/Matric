@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { SUBJECTS } from '../data/questions';
-import { Calculator, Atom, Beaker, Dna, BookOpen, Cpu, Milestone, Globe, Shield, Coins, Sparkles } from 'lucide-react';
+import { api } from '../lib/api';
+import { Calculator, Atom, Beaker, Dna, BookOpen, Cpu, Milestone, Globe, Shield, Coins } from 'lucide-react';
 
 export const SubjectsPage: React.FC = () => {
   const { progress, setActivePage, setSelectedSubject } = useApp();
+  const [displaySubjects, setDisplaySubjects] = useState(SUBJECTS);
 
   const getSubjectIcon = (iconName: string, size = 24) => {
     switch (iconName) {
@@ -22,6 +24,49 @@ export const SubjectsPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const loadSubjects = async () => {
+      try {
+        const [subjectsRes, questionsRes] = await Promise.all([
+          api.getSubjects(),
+          api.getQuestions({ limit: 200 }),
+        ]);
+
+        const liveSubjects = Array.isArray(subjectsRes?.data) ? subjectsRes.data : [];
+        const liveQuestions = Array.isArray(questionsRes?.data?.questions) ? questionsRes.data.questions : [];
+
+        if (liveSubjects.length > 0) {
+          const questionCountBySubject = liveQuestions.reduce((acc: Record<string, number>, question: any) => {
+            const subjectName = question.subject_name || question.subject || 'General';
+            acc[subjectName] = (acc[subjectName] || 0) + 1;
+            return acc;
+          }, {});
+
+          const mappedSubjects = liveSubjects.map((sub: any) => {
+            const fallback = SUBJECTS.find((item) => item.name.toLowerCase() === String(sub.name || '').toLowerCase());
+            return {
+              id: String(sub.id),
+              name: sub.name,
+              icon: fallback?.icon || sub.icon || 'BookOpen',
+              description: sub.description || fallback?.description || 'Live course content from your database.',
+              questionCount: questionCountBySubject[sub.name] || fallback?.questionCount || 0,
+              difficulty: fallback?.difficulty || 'Medium',
+            };
+          });
+
+          setDisplaySubjects(mappedSubjects);
+          return;
+        }
+      } catch (error) {
+        console.warn('Unable to load live subjects, using bundled subject list.', error);
+      }
+
+      setDisplaySubjects(SUBJECTS);
+    };
+
+    loadSubjects();
+  }, []);
+
   const handleStartSubject = (subjectName: string) => {
     setSelectedSubject(subjectName);
     setActivePage('practice');
@@ -37,7 +82,7 @@ export const SubjectsPage: React.FC = () => {
       </div>
 
       <div className="subjects-grid">
-        {SUBJECTS.map((sub) => {
+        {displaySubjects.map((sub) => {
           const solvedStats = progress.subjectProgress[sub.name] || { answered: 0, correct: 0 };
           const percentSolved = Math.round((solvedStats.answered / sub.questionCount) * 100) || 0;
 

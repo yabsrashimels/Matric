@@ -82,24 +82,57 @@ function initializeSQLite() {
         // Translate ILIKE to LIKE for SQLite
         sqliteSql = sqliteSql.replace(/\bILIKE\b/gi, 'LIKE');
 
-        // Translate RANDOM() to RANDOM() (both support it)
-        // Translate Postgres-specific limit keywords if needed
-
         const isInsertUpdateDelete = /^\s*(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\b/i.test(sqliteSql);
 
         if (isInsertUpdateDelete) {
-          sqliteDb.run(sqliteSql, params, function (err) {
+          sqliteDb.run(sqliteSql, params, function (this: any, err: Error | null) {
             if (err) {
               console.error('SQLite execution error:', err.message, '\nSQL:', sqliteSql);
               reject(err);
-            } else {
-              // Map sqlite results to PostgreSQL results format
-              // "this" context contains changes and lastID for SQLite run
-              resolve({
-                rows: [],
-                rowCount: this ? this.changes : 0,
-              });
+              return;
             }
+
+            const returningMatch = sqliteSql.match(/\bRETURNING\b\s+(.+)$/i);
+            if (!returningMatch) {
+              resolve({ rows: [], rowCount: this ? this.changes : 0 });
+              return;
+            }
+
+            const returningCols = returningMatch[1].trim();
+            const tableMatch = sqliteSql.match(/^\s*(?:INSERT\s+INTO|UPDATE)\s+([a-zA-Z0-9_\.]+)/i);
+            const tableName = tableMatch?.[1]?.replace(/^"|"$/g, '') || '';
+            const isInsert = /^\s*INSERT\b/i.test(sqliteSql);
+            const whereMatch = sqliteSql.match(/\bWHERE\b(.+?)\s*(?:RETURNING\b|$)/i);
+
+            let selectSql = `SELECT ${returningCols === '*' ? '*' : returningCols} FROM ${tableName}`;
+            let selectParams: any[] = [...params];
+
+            if (isInsert) {
+              selectSql += ' WHERE rowid = ?';
+              selectParams = [this?.lastID ?? 0];
+            } else if (whereMatch) {
+              selectSql += ` WHERE ${whereMatch[1].trim()}`;
+            }
+
+            sqliteDb.all(selectSql, selectParams, (selectErr, rows) => {
+              if (selectErr) {
+                console.error('SQLite returning query error:', selectErr.message, '\nSQL:', selectSql);
+                reject(selectErr);
+                return;
+              }
+
+              const formattedRows = (rows || []).map((row: any) => {
+                const newRow = { ...row };
+                for (const key in newRow) {
+                  if (key.startsWith('is_') && (newRow[key] === 0 || newRow[key] === 1)) {
+                    newRow[key] = newRow[key] === 1;
+                  }
+                }
+                return newRow;
+              });
+
+              resolve({ rows: formattedRows, rowCount: formattedRows.length });
+            });
           });
         } else {
           sqliteDb.all(sqliteSql, params, (err, rows) => {

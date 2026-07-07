@@ -26,6 +26,11 @@ export const register = async (req: Request, res: Response, next: NextFunction):
       );
       
       const updated = updatedUser.rows[0];
+      if (!updated) {
+        res.status(500).json({ success: false, message: 'Registration failed because the updated user record was not returned.' });
+        return;
+      }
+
       const token = generateToken({
         id: updated.id,
         uuid: updated.uuid,
@@ -73,6 +78,10 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     );
 
     const user = newUser.rows[0];
+    if (!user) {
+      res.status(500).json({ success: false, message: 'Registration failed because the new user record was not returned.' });
+      return;
+    }
 
     // 5. Generate Auth Token
     const token = generateToken({

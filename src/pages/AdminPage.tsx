@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const formatDisplayDate = (value: string | null | undefined) => {
+  if (!value) return '—';
+
+  const trimmed = String(value).trim();
+  if (!trimmed) return '—';
+
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return trimmed;
+
+  return date.toLocaleString();
+};
 import { 
   Users, BookOpen, Target, Award, Key, Shield, LogIn, UserPlus, LogOut,
   RefreshCw, Search, Edit, Trash2, CheckCircle2, AlertTriangle, 
@@ -195,8 +207,20 @@ export const AdminPage: React.FC = () => {
     try {
       const res = await api.getAdminPayments();
       if (res.success) {
-        setPayments(res.data.requests || []);
-        setPaymentStats(res.data.stats || { approvedCount: 0, pendingCount: 0, totalRevenue: 0 });
+        // Backend returns payments under res.data.payments; accept multiple shapes and normalize
+        const rawPayments = res.data.payments || res.data.requests || res.data || [];
+        const normalized = (rawPayments || []).map((p: any) => ({
+          ...p,
+          student_name: p.student_name || (p.first_name || p.last_name ? `${p.first_name || ''} ${p.last_name || ''}`.trim() : ''),
+          student_email: p.student_email || p.email || p.user_email || p.user_email_address || '',
+          screenshot_url: p.screenshot_url || p.screenshot || p.image_url || null,
+          created_at: p.created_at || p.createdAt || p.date || null,
+          status: p.status || 'Pending',
+          plan_name: p.plan_name || p.name || '',
+        }));
+
+        setPayments(normalized);
+        setPaymentStats(res.data.stats || res.data.stats || { approvedCount: 0, pendingCount: 0, totalRevenue: 0 });
       }
     } catch (e) {
       console.error(e);
@@ -380,6 +404,28 @@ export const AdminPage: React.FC = () => {
       } catch (e) {
         console.error(e);
       }
+    }
+  };
+
+  const handleDeleteSubject = async (subjectId: number) => {
+    if (!window.confirm('Delete this subject? This will remove it from the syllabus.')) return;
+    try {
+      await api.deleteSubject(subjectId);
+      await loadSyllabus();
+      alert('Subject deleted successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete subject');
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: number) => {
+    if (!window.confirm('Delete this topic?')) return;
+    try {
+      await api.deleteTopic(topicId);
+      await loadSyllabus();
+      alert('Topic deleted successfully.');
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete topic');
     }
   };
 
@@ -758,7 +804,7 @@ export const AdminPage: React.FC = () => {
                           }}
                         >
                           <p style={{ margin: 0, fontSize: '0.85rem' }}>{n.message}</p>
-                          <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{new Date(n.created_at).toLocaleString()}</span>
+                          <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{formatDisplayDate(n.created_at)}</span>
                         </div>
                       ))
                     )}
@@ -914,7 +960,7 @@ export const AdminPage: React.FC = () => {
                     ) : (
                       payments.map(p => (
                         <tr key={p.id}>
-                          <td>{new Date(p.created_at).toLocaleDateString()}</td>
+                          <td>{formatDisplayDate(p.created_at)}</td>
                           <td>
                             <strong>{p.student_name}</strong><br />
                             <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{p.student_email}</span>
@@ -941,7 +987,7 @@ export const AdminPage: React.FC = () => {
                             )}
                           </td>
                           <td>
-                            {p.status === 'Pending' && (
+                            {(String(p.status).toLowerCase() === 'pending') && (
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
                                 <button 
                                   onClick={() => handleApprovePayment(p.id)}
@@ -1094,6 +1140,7 @@ export const AdminPage: React.FC = () => {
                       </div>
                       <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                         <button onClick={() => { setEditingSubject(s); setNewSubjectName(s.name); setNewSubjectDesc(s.description); setShowSubjectModal(true); }} style={{ background: 'none', border: 'none', color: 'var(--ethio-yellow)', cursor: 'pointer' }}><Edit size={14} /></button>
+                        <button onClick={() => handleDeleteSubject(s.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="Delete subject"><Trash2 size={14} /></button>
                       </div>
                     </div>
                   ))}
@@ -1119,6 +1166,7 @@ export const AdminPage: React.FC = () => {
                         </div>
                         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                           <button onClick={() => { setEditingTopic(t); setNewTopicName(t.name); setNewTopicSubjectId(t.subject_id); setShowTopicModal(true); }} style={{ background: 'none', border: 'none', color: 'var(--ethio-yellow)', cursor: 'pointer' }}><Edit size={14} /></button>
+                          <button onClick={() => handleDeleteTopic(t.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="Delete topic"><Trash2 size={14} /></button>
                         </div>
                       </div>
                     );
@@ -1440,8 +1488,23 @@ export const AdminPage: React.FC = () => {
                       <textarea
                         value={bulkImportText}
                         onChange={(e) => setBulkImportText(e.target.value)}
-                        placeholder='[{"question":"What is 2+2?", "option_a":"3", "option_b":"4", "option_c":"5", "option_d":"6", "correct_answer":"B", "explanation":"Basic arithmetic"}]'
-                        style={{ width: '100%', minHeight: '180px', padding: '0.5rem', fontFamily: 'monospace', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+                        placeholder='[{
+                          "subject": "Mathematics",
+                          "topic": "Differentiation",
+                          "year": 2024,
+                          "difficulty": "Medium",
+                          "question": "If f(x) = x^2 + 3x, what is f(x)?",
+                          "option_a": "2x + 3",
+                          "option_b": "x + 3",
+                          "option_c": "2x",
+                          "option_d": "3x",
+                          "correct_answer": "A",
+                          "explanation": "Differentiate term by term: derivative of x^2 is 2x and derivative of 3x is 3.",
+                          "reference": "Grade 12 Mathematics",
+                          "hint": "Use the power rule",
+                          "estimated_time": 30
+                        }] '
+                                              style={{ width: '100%', minHeight: '180px', padding: '0.5rem', fontFamily: 'monospace', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
                       />
 
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
@@ -1513,7 +1576,7 @@ export const AdminPage: React.FC = () => {
                     selectedUserDetail.login_history?.map((log: any) => (
                       <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', padding: '0.25rem 0' }}>
                         <span>IP: {log.ip_address} ({log.user_agent?.substring(0, 45)}...)</span>
-                        <span style={{ opacity: 0.5 }}>{new Date(log.login_time).toLocaleString()}</span>
+                        <span style={{ opacity: 0.5 }}>{formatDisplayDate(log.login_time)}</span>
                       </div>
                     ))
                   )}

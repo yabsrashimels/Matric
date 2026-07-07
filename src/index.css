@@ -186,22 +186,34 @@ body {
   pointer-events: none;
 }
 
-/* Custom thin scrollbar for the sidebar */
-.sidebar::-webkit-scrollbar {
-  width: 8px;
+/* Custom thin horizontal scrollbar for the sidebar */
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(7,137,48,0.24) transparent;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
 }
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
 .sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sidebar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(7,137,48,0.12), rgba(7,137,48,0.2));
+  background: linear-gradient(180deg, rgba(7,137,48,0.28), rgba(7,137,48,0.14));
   border-radius: 999px;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   background-clip: padding-box;
 }
 
-/* Firefox scrollbar */
-* { scrollbar-width: thin; scrollbar-color: rgba(7,137,48,0.18) transparent; }
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(7,137,48,0.4), rgba(7,137,48,0.2));
+}
 
 .nav-badge {
   background-color: var(--ethio-red);
@@ -2615,13 +2627,17 @@ input:checked + .slider:before {
 /* Navigation Tabs */
 .admin-tabs-nav {
   display: flex;
-  gap: 0.35rem;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 0.5rem;
-  margin-bottom: 2rem;
-  overflow-x: auto;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-right: 1px solid var(--border-color);
+  padding: 0.75rem;
+  margin-right: 1.25rem;
+  margin-bottom: 0;
+  width: 220px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(7, 137, 48, 0.35) transparent;
+  scrollbar-color: rgba(107,114,128,0.35) transparent;
 }
 
 .admin-tabs-nav::-webkit-scrollbar {
@@ -2689,6 +2705,11 @@ input:checked + .slider:before {
 .admin-tab-btn.active {
   background-color: var(--accent-light);
   color: var(--ethio-green);
+}
+
+/* When admin nav is vertical, push the content to the right */
+.admin-tab-content-panel {
+  margin-left: 240px;
 }
 
 /* Grid & Cards layout */
