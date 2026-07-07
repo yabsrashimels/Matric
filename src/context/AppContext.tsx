@@ -89,10 +89,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Load state from LocalStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('ethio_theme') as 'light' | 'dark' | null;
+    let activeTheme: 'light' | 'dark' = 'light';
     if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      activeTheme = savedTheme;
+    } else {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      activeTheme = prefersDark ? 'dark' : 'light';
+      localStorage.setItem('ethio_theme', activeTheme);
     }
+    setTheme(activeTheme);
+    document.documentElement.setAttribute('data-theme', activeTheme);
 
     const savedSound = localStorage.getItem('ethio_sound');
     if (savedSound !== null) {

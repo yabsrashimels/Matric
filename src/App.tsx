@@ -17,35 +17,47 @@ import { ProfilePage } from './pages/ProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { MembershipPage } from './pages/MembershipPage';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Menu, X, Home, BookOpen, Target, Award, BookOpenCheck, 
+import {
+  Menu, X, Home, BookOpen, Target, Award, BookOpenCheck,
   Calendar, Bookmark, Settings, Flame, Zap, Sparkles, Shield,
-  User, LogIn, UserPlus, LogOut, Globe
+  User, LogIn, UserPlus, LogOut, Globe, Sun, Moon,
+  Facebook, Instagram, Linkedin, Github, Send, Mail, Phone, Clock,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { 
-    activePage, 
-    setActivePage, 
-    progress, 
-    theme, 
-    showConfetti, 
-    user, 
-    logout, 
-    language, 
-    setLanguage, 
-    t 
+  const {
+    activePage,
+    setActivePage,
+    progress,
+    theme,
+    toggleTheme,
+    showConfetti,
+    user,
+    logout,
+    language,
+    setLanguage,
+    t
   } = useApp();
-  
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const sidebarNavRef = useRef<HTMLDivElement | null>(null);
   const [indicatorTop, setIndicatorTop] = useState<number>(0);
   const [indicatorVisible, setIndicatorVisible] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
+
+  const toggleSidebarCollapse = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
 
   const totalQuestionsCount = QUESTIONS.length;
   const completedQuestionsCount = progress.completedQuestionIds.length;
-  const overallPercent = totalQuestionsCount > 0 
-    ? Math.round((completedQuestionsCount / totalQuestionsCount) * 100) 
+  const overallPercent = totalQuestionsCount > 0
+    ? Math.round((completedQuestionsCount / totalQuestionsCount) * 100)
     : 0;
 
   // Construct dynamic list of sidebar items based on login status and role
@@ -63,7 +75,7 @@ const AppContent: React.FC = () => {
     if (user) {
       items.push({ id: 'progress', label: t('dashboard'), icon: <Sparkles size={18} /> });
       items.push({ id: 'profile', label: t('profile'), icon: <User size={18} /> });
-      
+
       if (user.role === 'admin') {
         items.push({ id: 'admin', label: t('admin'), icon: <Shield size={18} /> });
       }
@@ -148,10 +160,10 @@ const AppContent: React.FC = () => {
           const delay = Math.random() * 2;
           const duration = 2 + Math.random() * 2;
           const color = ['var(--ethio-green)', 'var(--ethio-yellow)', 'var(--ethio-red)', '#2563eb', '#a855f7'][Math.floor(Math.random() * 5)];
-          
+
           return (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="confetti-piece"
               style={{
                 left: `${left}%`,
@@ -168,15 +180,15 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="app-container" data-theme={theme}>
-      
+    <div className={`app-container ${isCollapsed ? 'sidebar-collapsed' : ''}`} data-theme={theme}>
+
       {/* Confetti Rain */}
       {renderConfetti()}
 
       {/* Mobile Top Header */}
       <header className="mobile-header">
-        <button 
-          className="menu-btn" 
+        <button
+          className="menu-btn"
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           aria-label="Toggle navigation menu"
           id="mobile-nav-toggle-btn"
@@ -191,33 +203,45 @@ const AppContent: React.FC = () => {
           </div>
           <span className="brand-name">Ethio Matric Prep</span>
         </div>
-        <div className="mobile-lang-selector" style={{ marginRight: '0.5rem' }}>
-          <button 
-            className="lang-toggle-btn-small"
-            onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
-            id="mobile-lang-toggle"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            className="theme-toggle-btn"
+            style={{ width: '32px', height: '32px' }}
+            onClick={toggleTheme}
+            id="mobile-theme-toggle-btn"
+            aria-label="Toggle dark/light mode"
           >
-            <Globe size={18} />
-            <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{language.toUpperCase()}</span>
+            {theme === 'dark' ? <Sun size={16} className="theme-icon-sun" /> : <Moon size={16} className="theme-icon-moon" />}
           </button>
+
+          <div className="mobile-lang-selector" style={{ marginRight: '0.5rem' }}>
+            <button
+              className="lang-toggle-btn-small"
+              onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
+              id="mobile-lang-toggle"
+            >
+              <Globe size={18} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{language.toUpperCase()}</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Navigation Sidebar (Desktop + Drawer on Mobile) */}
-      <aside className={`sidebar ${mobileSidebarOpen ? 'open' : ''}`} id="navigation-sidebar-container">
-        
+      <aside className={`sidebar ${mobileSidebarOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`} id="navigation-sidebar-container">
+
         {/* Language Selector Header Widget */}
         <div className="sidebar-lang-selector">
           <span className="lang-label"><Globe size={14} /> Language / ቋንቋ:</span>
           <div className="lang-buttons-row">
-            <button 
+            <button
               className={`lang-btn ${language === 'en' ? 'active' : ''}`}
               onClick={() => setLanguage('en')}
               id="sidebar-lang-en-btn"
             >
               English
             </button>
-            <button 
+            <button
               className={`lang-btn ${language === 'am' ? 'active' : ''}`}
               onClick={() => setLanguage('am')}
               id="sidebar-lang-am-btn"
@@ -227,13 +251,24 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
-        <div className="brand-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem' }}>
-          <div className="brand-logo">
-            <div className="brand-logo-inner">
-              <span style={{ fontSize: '0.8rem' }}>🇪🇹</span>
+        <div className="brand-section" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem', justifyContent: 'space-between', display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+            <div className="brand-logo" style={{ flexShrink: 0 }}>
+              <div className="brand-logo-inner">
+                <span style={{ fontSize: '0.8rem' }}>🇪🇹</span>
+              </div>
             </div>
+            {!isCollapsed && <span className="brand-name">Ethio Matric Prep</span>}
           </div>
-          <span className="brand-name">Ethio Matric Prep</span>
+          <button
+            onClick={toggleSidebarCollapse}
+            className="sidebar-collapse-toggle-btn"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            id="sidebar-collapse-toggle"
+            style={{ flexShrink: 0 }}
+          >
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
         <nav className="sidebar-nav" ref={sidebarNavRef}>
@@ -292,22 +327,42 @@ const AppContent: React.FC = () => {
 
       {/* Main View Area */}
       <main className="main-content">
-        
+
         {/* Desktop Header Bar */}
         <header className="main-header-bar">
           <div className="main-header-left">
             <span className="welcome-text">
-              {user 
-                ? `${language === 'am' ? 'እንኳን ደህና መጡ' : 'Welcome back'}, ${user.first_name}! 👋` 
+              {user
+                ? `${language === 'am' ? 'እንኳን ደህና መጡ' : 'Welcome back'}, ${user.first_name}! 👋`
                 : `${language === 'am' ? 'እንኳን ደህና መጡ' : 'Welcome back, Scholar'}! 👋`}
             </span>
             <span className="welcome-subtext">
-              {language === 'am' 
-                ? 'የኢትዮጵያን ማትሪክ ዝግጅትዎን ዛሬ ለማጠናቀቅ ዝግጁ ነዎት?' 
+              {language === 'am'
+                ? 'የኢትዮጵያን ማትሪክ ዝግጅትዎን ዛሬ ለማጠናቀቅ ዝግጁ ነዎት?'
                 : 'Ready to master your Ethiopian Matric preparation today?'}
             </span>
           </div>
           <div className="main-header-right">
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              id="desktop-theme-toggle-btn"
+              aria-label="Toggle theme layout"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={theme}
+                  initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: 90, scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {theme === 'dark' ? <Sun size={20} className="theme-icon-sun" /> : <Moon size={20} className="theme-icon-moon" />}
+                </motion.div>
+              </AnimatePresence>
+            </button>
             <div className="online-pill">
               <span className="pulse-dot"></span>
               <span>4,291 students active</span>
@@ -346,17 +401,98 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <footer className="site-footer">
-          <div className="footer-links">
-            <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('home')}>About Portal</button>
-            <a href="mailto:support@ethiomatricprep.com" className="footer-link">Contact Support</a>
-            <button className="footer-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('settings')}>Privacy Policies</button>
-            <span className="footer-link">Syllabus v1.2</span>
+        {/* Overhauled Premium Footer */}
+        <footer className="enhanced-site-footer">
+          <div className="footer-top-grid">
+            {/* About Column */}
+            <div className="footer-col about-col">
+              <div className="brand-section" style={{ padding: 0, marginBottom: '1.25rem' }}>
+                <div className="brand-logo">
+                  <div className="brand-logo-inner">
+                    <span style={{ fontSize: '0.8rem' }}>🇪🇹</span>
+                  </div>
+                </div>
+                <span className="brand-name">Ethio Matric Prep</span>
+              </div>
+              <p className="footer-about-text">
+                This platform helps Ethiopian Grade 12 students prepare effectively for the National Matric Examination through structured learning resources, mock examinations, and progress tracking. Aligned with the latest Ministry of Education syllabus.
+              </p>
+              <div className="social-links-row">
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-icon-btn facebook" aria-label="Facebook"><Facebook size={18} /></a>
+                <a href="https://telegram.org" target="_blank" rel="noreferrer" className="social-icon-btn telegram" aria-label="Telegram"><Send size={18} /></a>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-icon-btn instagram" aria-label="Instagram"><Instagram size={18} /></a>
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-icon-btn linkedin" aria-label="LinkedIn"><Linkedin size={18} /></a>
+                <a href="https://github.com" target="_blank" rel="noreferrer" className="social-icon-btn github" aria-label="GitHub"><Github size={18} /></a>
+              </div>
+            </div>
+
+            {/* Quick Links Column */}
+            <div className="footer-col links-col">
+              <h4>Quick Links</h4>
+              <ul className="footer-links-list">
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('home')}>Home</button></li>
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('subjects')}>Subjects</button></li>
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('mock')}>Mock Exams</button></li>
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('progress')}>Dashboard / Stats</button></li>
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('planner')}>Study Planner</button></li>
+                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('settings')}>System Settings</button></li>
+              </ul>
+            </div>
+
+            {/* Contact Support Column */}
+            <div className="footer-col contact-col">
+              <h4>Contact Support</h4>
+              <ul className="footer-contact-list">
+                <li>
+                  <Mail size={16} className="contact-icon text-green-500" />
+                  <a href="mailto:support@ethiomatricprep.com">support@ethiomatricprep.com</a>
+                </li>
+                <li>
+                  <Phone size={16} className="contact-icon text-yellow-500" />
+                  <a href="tel:+251955123456">+251 955 123 456</a>
+                </li>
+                <li>
+                  <Clock size={16} className="contact-icon text-red-500" />
+                  <span>Mon - Sat, 8:00 AM - 6:00 PM</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter Column */}
+            <div className="footer-col newsletter-col">
+              <h4>Stay Updated</h4>
+              <p>Receive notifications for syllabus updates, exams, and keys notes directly.</p>
+              <form onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing to our newsletter!'); }} className="newsletter-form">
+                <input
+                  type="email"
+                  placeholder="Enter email address"
+                  required
+                  className="newsletter-input"
+                  aria-label="Email address for newsletter"
+                />
+                <button type="submit" className="btn btn-primary newsletter-submit-btn">
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
-          <p className="footer-copyright">
-            © 2026 Ethio Matric Prep. Crafted aligned with the Ministry of Education Grade 12 National Curriculum of Ethiopia.
-          </p>
+
+          <div className="animated-divider">
+            <div className="divider-glow-line"></div>
+          </div>
+
+          <div className="footer-bottom-row">
+            <p className="copyright-text">
+              © {new Date().getFullYear()} Ethio Matric Prep. Crafted in alignment with MoE Grade 12 National Curriculum.
+            </p>
+            <div className="footer-policy-links">
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('settings')}>Privacy Policy</button>
+              <span className="bullet-dot">•</span>
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('settings')}>Terms</button>
+              <span className="bullet-dot">•</span>
+              <span className="syllabus-stamp">Syllabus v1.2</span>
+            </div>
+          </div>
         </footer>
       </main>
     </div>

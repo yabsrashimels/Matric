@@ -3,17 +3,17 @@ import { useApp } from '../context/AppContext';
 import { QUESTIONS, SUBJECTS } from '../data/questions';
 import { api } from '../lib/api';
 import { Question } from '../types';
-import { 
-  ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Lightbulb, 
-  BookOpen, Search, Filter, RefreshCw, CheckCircle, AlertTriangle, 
-  Clock, Share2, Maximize2, Minimize2 
+import {
+  ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Lightbulb,
+  BookOpen, Search, Filter, RefreshCw, CheckCircle, AlertTriangle,
+  Clock, Share2, Maximize2, Minimize2
 } from 'lucide-react';
 
 export const PracticePage: React.FC = () => {
-  const { 
-    progress, answerQuestion, toggleFavorite, saveNote, 
-    playCorrectSound, playIncorrectSound, triggerConfetti, 
-    selectedSubject, setSelectedSubject 
+  const {
+    progress, answerQuestion, toggleFavorite, saveNote,
+    playCorrectSound, playIncorrectSound, triggerConfetti,
+    selectedSubject, setSelectedSubject
   } = useApp();
 
   const [questionPool, setQuestionPool] = useState<Question[]>(QUESTIONS);
@@ -77,7 +77,7 @@ export const PracticePage: React.FC = () => {
           });
 
           setQuestionPool(mappedQuestions);
-          setSubjectOptions([...new Set(mappedQuestions.map((question) => question.subject).filter(Boolean))]);
+          setSubjectOptions(Array.from(new Set(mappedQuestions.map((question) => question.subject))) as string[]);
           setIsLoadingQuestions(false);
           return;
         }
@@ -124,7 +124,7 @@ export const PracticePage: React.FC = () => {
     // Search query (matches topic, question text, or explanations)
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
-      result = result.filter(q => 
+      result = result.filter(q =>
         q.question.toLowerCase().includes(query) ||
         q.topic.toLowerCase().includes(query) ||
         q.subject.toLowerCase().includes(query)
@@ -164,7 +164,7 @@ export const PracticePage: React.FC = () => {
 
     // Call context actions
     answerQuestion(currentQuestion.id, isCorrect);
-    
+
     if (isCorrect) {
       playCorrectSound();
       triggerConfetti();
@@ -219,8 +219,8 @@ export const PracticePage: React.FC = () => {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
         return; // Don't trigger when typing in fields
       }
-      
-      switch(e.key.toLowerCase()) {
+
+      switch (e.key.toLowerCase()) {
         case 'a': handleOptionSelect(currentQuestion?.options[0]); break;
         case 'b': handleOptionSelect(currentQuestion?.options[1]); break;
         case 'c': handleOptionSelect(currentQuestion?.options[2]); break;
@@ -239,7 +239,7 @@ export const PracticePage: React.FC = () => {
 
   return (
     <div className={isFullscreen ? 'fullscreen-mode-container' : ''} style={isFullscreen ? { backgroundColor: 'var(--bg-primary)', padding: '2rem', minHeight: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, overflowY: 'auto' } : {}}>
-      
+
       {/* Page Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
@@ -251,8 +251,8 @@ export const PracticePage: React.FC = () => {
             {isLoadingQuestions && <span style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Loading the latest live question bank…</span>}
           </p>
         </div>
-        <button 
-          className="btn btn-secondary" 
+        <button
+          className="btn btn-secondary"
           onClick={() => setIsFullscreen(!isFullscreen)}
           title="Toggle Fullscreen Focus"
         >
@@ -265,15 +265,15 @@ export const PracticePage: React.FC = () => {
         <div className="search-bar-container">
           <div className="search-input-wrapper">
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Search questions by topic, keyword, or formulas..." 
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search questions by topic, keyword, or formulas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          { (searchQuery || difficultyFilter !== 'All' || yearFilter !== 'All' || statusFilter !== 'All' || subjectFilter !== 'All') && (
+          {(searchQuery || difficultyFilter !== 'All' || yearFilter !== 'All' || statusFilter !== 'All' || subjectFilter !== 'All') && (
             <button className="btn btn-secondary" onClick={handleResetFilters} style={{ flexShrink: 0 }}>
               <RefreshCw size={16} /> Clear Filters
             </button>
@@ -336,7 +336,7 @@ export const PracticePage: React.FC = () => {
         <div className="practice-layout">
           {/* Left Panel: The Active Question */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            
+
             {/* Nav and Tracker bar */}
             <div className="question-nav-header">
               <span style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
@@ -368,11 +368,11 @@ export const PracticePage: React.FC = () => {
                   const letter = String.fromCharCode(65 + idx); // A, B, C, D
                   const isSelected = selectedOption === option;
                   const isCorrect = option === currentQuestion.correctAnswer;
-                  
+
                   // Visual button class mapping
                   let btnClass = 'option-btn';
                   if (isSelected) btnClass += ' selected';
-                  
+
                   if (isAnswered) {
                     if (isCorrect) {
                       btnClass += ' correct';
@@ -383,8 +383,8 @@ export const PracticePage: React.FC = () => {
 
                   return (
                     <div key={idx}>
-                      <button 
-                        className={btnClass} 
+                      <button
+                        className={btnClass}
                         onClick={() => handleOptionSelect(option)}
                         disabled={isAnswered}
                         id={`option-${letter}`}
@@ -392,7 +392,7 @@ export const PracticePage: React.FC = () => {
                         <span className="option-letter">{letter}</span>
                         <span style={{ flexGrow: 1 }}>{option}</span>
                       </button>
-                      
+
                       {/* Explanations of individual incorrect options once answered */}
                       {isAnswered && isSelected && !isCorrect && (
                         <span className="option-explain-text">
@@ -407,15 +407,15 @@ export const PracticePage: React.FC = () => {
               {/* Bottom control actions */}
               <div className="question-actions">
                 <div className="action-left">
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={handlePrev}
                     disabled={currentIndex === 0}
                   >
                     <ArrowLeft size={16} /> Prev
                   </button>
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={handleNext}
                     disabled={currentIndex === filteredQuestions.length - 1}
                   >
@@ -424,8 +424,8 @@ export const PracticePage: React.FC = () => {
                 </div>
 
                 <div className="action-right">
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={() => toggleFavorite(currentQuestion.id)}
                     title="Bookmark Question"
                   >
@@ -435,8 +435,8 @@ export const PracticePage: React.FC = () => {
                       <Bookmark size={18} />
                     )}
                   </button>
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={handleShare}
                     title="Share Question"
                   >
@@ -444,8 +444,8 @@ export const PracticePage: React.FC = () => {
                   </button>
 
                   {!isAnswered ? (
-                    <button 
-                      className="btn btn-primary" 
+                    <button
+                      className="btn btn-primary"
                       onClick={handleSubmit}
                       disabled={!selectedOption}
                       id="submit-answer-btn"
@@ -453,8 +453,8 @@ export const PracticePage: React.FC = () => {
                       Check Answer [Enter]
                     </button>
                   ) : (
-                    <button 
-                      className="btn btn-primary btn-warning" 
+                    <button
+                      className="btn btn-primary btn-warning"
                       onClick={handleNext}
                       disabled={currentIndex === filteredQuestions.length - 1}
                     >
@@ -479,11 +479,11 @@ export const PracticePage: React.FC = () => {
                     </span>
                   )}
                 </h3>
-                
+
                 <div className="explanation-body">
                   <p><strong>Correct Option:</strong> {currentQuestion.correctAnswer}</p>
                   <p style={{ whiteSpace: 'pre-line' }}>{currentQuestion.explanation}</p>
-                  
+
                   <div className="explanation-meta-list">
                     <div className="explanation-meta-item">
                       <strong>Curriculum Unit:</strong> {currentQuestion.reference}
@@ -531,7 +531,7 @@ export const PracticePage: React.FC = () => {
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                   Write formulas, reference equations, or personal memory tips here. Notes are stored locally for this question.
                 </p>
-                <textarea 
+                <textarea
                   className="notes-textarea"
                   placeholder="E.g., Integration of 3x^2 is x^3. Must remember to apply upper bound subtraction next time..."
                   value={noteText}
