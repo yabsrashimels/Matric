@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { QUESTIONS } from '../data/questions';
+import { isPremiumQuestion, QUESTIONS } from '../data/questions';
 import { Question } from '../types';
 import { Timer, AlertTriangle, CheckCircle, RefreshCw, Trophy, ArrowRight, ArrowLeft } from 'lucide-react';
 
@@ -29,13 +29,7 @@ export const MockExamPage: React.FC = () => {
     // Pick 10 random questions from pool
     let pool = QUESTIONS;
     if (isLocked(2)) {
-      pool = QUESTIONS.filter(q => {
-        const sub = q.subject.toLowerCase();
-        const yr = q.year;
-        if (sub === 'mathematics' && [2014, 2015, 2016].includes(yr)) return false;
-        if (sub === 'physics' && [2014, 2015, 2016].includes(yr)) return false;
-        return true;
-      });
+      pool = QUESTIONS.filter(q => !isPremiumQuestion(q));
     }
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10);

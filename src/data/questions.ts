@@ -5,6 +5,9 @@ import math2016 from './maths/matric_math_2016EC_practice.json.json';
 import physics2014 from './physics/matric_physics_2014ET.json';
 import physics2015 from './physics/matric_physics_2015Et.json';
 import physics2016 from './physics/matric_physics_2016Et.json';
+import biology2008 from './biology/matric_chemistry_2008Et.json';
+import biology2009 from './biology/matric_chemistry_2009Et.json';
+import biology2010 from './biology/matric_chemistry_2010Et.json';
 
 export const SUBJECTS: Subject[] = [
   {
@@ -36,7 +39,7 @@ export const SUBJECTS: Subject[] = [
     name: 'Biology',
     icon: 'Dna',
     description: 'Genetics, Cellular Respiration, Photosynthesis, Human Anatomy and Ecology.',
-    questionCount: 3,
+    questionCount: 303,
     difficulty: 'Medium'
   },
   {
@@ -788,6 +791,7 @@ function mapPremiumQuestions(rawList: any[], idOffset: number): Question[] {
     const optionB = q.option_b || '';
     const optionC = q.option_c || '';
     const optionD = q.option_d || '';
+    const options = [optionA, optionB, optionC, optionD].filter(Boolean);
     const correctLetter = (q.correct_answer || '').toUpperCase();
     const correct =
       correctLetter === 'A' ? optionA :
@@ -800,20 +804,28 @@ function mapPremiumQuestions(rawList: any[], idOffset: number): Question[] {
       difficulty: (q.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
       year: q.year,
       question: q.question,
-      options: [optionA, optionB, optionC, optionD],
+      options,
       correctAnswer: correct,
       explanation: q.explanation || '',
-      incorrectExplanations: {
-        [optionA]: optionA === correct ? '' : 'Not correct.',
-        [optionB]: optionB === correct ? '' : 'Not correct.',
-        [optionC]: optionC === correct ? '' : 'Not correct.',
-        [optionD]: optionD === correct ? '' : 'Not correct.'
-      },
+      incorrectExplanations: Object.fromEntries(
+        options.map(option => [option, option === correct ? '' : 'Not correct.'])
+      ),
       reference: q.reference || '',
       hint: q.hint || '',
       time: q.estimated_time ? `${q.estimated_time} seconds` : '30 seconds'
     } as Question;
   });
+}
+
+export function isPremiumQuestion(question: Pick<Question, 'subject' | 'year'>): boolean {
+  const subject = question.subject.toLowerCase();
+  const year = question.year;
+
+  return (
+    (subject === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
+    (subject === 'physics' && [2014, 2015, 2016].includes(year)) ||
+    (subject === 'biology' && [2008, 2009, 2010].includes(year))
+  );
 }
 
 // Premium Math questions: 2014, 2015, 2016 E.C.
@@ -833,4 +845,19 @@ const rawPremiumPhysics = [
 ];
 const physicsPremiumQuestions = mapPremiumQuestions(rawPremiumPhysics, baseQuestions.length + mathPremiumQuestions.length + 1);
 
-export const QUESTIONS: Question[] = baseQuestions.concat(mathPremiumQuestions, physicsPremiumQuestions);
+// Premium Biology questions: 2008, 2009, 2010 E.C.
+const rawPremiumBiology = [
+  ...((biology2008 || []) as any[]).map(q => ({ ...q, year: 2008 })),
+  ...((biology2009 || []) as any[]).map(q => ({ ...q, year: 2009 })),
+  ...((biology2010 || []) as any[]).map(q => ({ ...q, year: 2010 }))
+].filter(q => q.subject === 'Biology');
+const biologyPremiumQuestions = mapPremiumQuestions(
+  rawPremiumBiology,
+  baseQuestions.length + mathPremiumQuestions.length + physicsPremiumQuestions.length + 1
+);
+
+export const QUESTIONS: Question[] = baseQuestions.concat(
+  mathPremiumQuestions,
+  physicsPremiumQuestions,
+  biologyPremiumQuestions
+);

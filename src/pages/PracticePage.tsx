@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { QUESTIONS, SUBJECTS } from '../data/questions';
+import { isPremiumQuestion, QUESTIONS, SUBJECTS } from '../data/questions';
 import { api } from '../lib/api';
 import { Question } from '../types';
 import {
@@ -108,13 +108,7 @@ export const PracticePage: React.FC = () => {
 
     // Filter out locked Premium questions (Math & Physics 2014/2015/2016 — requires 100 ETB)
     if (isLocked(2)) {
-      result = result.filter(q => {
-        const sub = q.subject.toLowerCase();
-        const yr = q.year;
-        if (sub === 'mathematics' && [2014, 2015, 2016].includes(yr)) return false;
-        if (sub === 'physics' && [2014, 2015, 2016].includes(yr)) return false;
-        return true;
-      });
+      result = result.filter(q => !isPremiumQuestion(q));
     }
 
     // Subject

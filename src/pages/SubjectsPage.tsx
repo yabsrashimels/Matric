@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { SUBJECTS } from '../data/questions';
+import { isPremiumQuestion, SUBJECTS } from '../data/questions';
 import { api } from '../lib/api';
 import { Calculator, Atom, Beaker, Dna, BookOpen, Cpu, Milestone, Globe, Shield, Coins } from 'lucide-react';
 
@@ -47,11 +47,7 @@ export const SubjectsPage: React.FC = () => {
           const questionCountBySubject = combinedQuestions.reduce((acc: Record<string, number>, question: any) => {
             const subjectName = question.subject_name || question.subject || 'General';
             const year = question.year;
-            const sub = subjectName.toLowerCase();
-            if (isLocked(2) && (
-              (sub === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
-              (sub === 'physics' && [2014, 2015, 2016].includes(year))
-            )) {
+            if (isLocked(2) && isPremiumQuestion({ subject: subjectName, year })) {
               return acc;
             }
             acc[subjectName] = (acc[subjectName] || 0) + 1;
@@ -78,15 +74,9 @@ export const SubjectsPage: React.FC = () => {
       }
 
       // Handle bundled QUESTION count (respects premium lock)
-      import('../data/questions').then(({ QUESTIONS }) => {
+      import('../data/questions').then(({ QUESTIONS, isPremiumQuestion }) => {
         const premiumLockedSubjects = isLocked(2)
-          ? QUESTIONS.filter(q => {
-            const sub = q.subject.toLowerCase();
-            return (
-              (sub === 'mathematics' && [2014, 2015, 2016].includes(q.year)) ||
-              (sub === 'physics' && [2014, 2015, 2016].includes(q.year))
-            );
-          })
+          ? QUESTIONS.filter(q => isPremiumQuestion(q))
           : [];
 
         const lockedTexts = new Set(premiumLockedSubjects.map(q => q.question));
