@@ -158,7 +158,7 @@ export const PracticePage: React.FC = () => {
       const activeQ = filteredQuestions[currentIndex];
       setNoteText(progress.notes[activeQ.id] || '');
       setSelectedOption(null);
-      setIsAnswered(false);
+      
       setShowHint(false);
     }
   }, [currentIndex, filteredQuestions, progress.notes]);
