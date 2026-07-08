@@ -5,9 +5,12 @@ import math2016 from './maths/matric_math_2016EC_practice.json.json';
 import physics2014 from './physics/matric_physics_2014ET.json';
 import physics2015 from './physics/matric_physics_2015Et.json';
 import physics2016 from './physics/matric_physics_2016Et.json';
-import biology2008 from './biology/matric_chemistry_2008Et.json';
-import biology2009 from './biology/matric_chemistry_2009Et.json';
-import biology2010 from './biology/matric_chemistry_2010Et.json';
+import biology2008 from './biology/matric_biology_2008Et.json';
+import biology2009 from './biology/matric_biology_2009Et.json';
+import biology2010 from './biology/matric_biology_2010Et.json';
+import chemistry2005 from './chemistry/matric_chemistry_2005Et.json';
+import chemistry2014 from './chemistry/matric_chemistry_2014Et.json';
+import chemistry2015 from './chemistry/matric_chemistry_2015Et.json';
 
 export const SUBJECTS: Subject[] = [
   {
@@ -31,7 +34,7 @@ export const SUBJECTS: Subject[] = [
     name: 'Chemistry',
     icon: 'Beaker',
     description: 'Chemical Kinetics, Electrochemistry, Chemical Equilibrium, Organic Chemistry.',
-    questionCount: 3,
+    questionCount: 285,
     difficulty: 'Medium'
   },
   {
@@ -824,7 +827,8 @@ export function isPremiumQuestion(question: Pick<Question, 'subject' | 'year'>):
   return (
     (subject === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
     (subject === 'physics' && [2014, 2015, 2016].includes(year)) ||
-    (subject === 'biology' && [2008, 2009, 2010].includes(year))
+    (subject === 'biology' && [2008, 2009, 2010].includes(year)) ||
+    subject === 'chemistry'
   );
 }
 
@@ -856,8 +860,20 @@ const biologyPremiumQuestions = mapPremiumQuestions(
   baseQuestions.length + mathPremiumQuestions.length + physicsPremiumQuestions.length + 1
 );
 
+// Premium Chemistry questions: 2005, 2014, 2015 E.C.
+const rawPremiumChemistry = [
+  ...((chemistry2005 || []) as any[]).map(q => ({ ...q, year: 2005 })),
+  ...((chemistry2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
+  ...((chemistry2015 || []) as any[]).map(q => ({ ...q, year: 2015 }))
+].filter(q => q.subject === 'Chemistry');
+const chemistryPremiumQuestions = mapPremiumQuestions(
+  rawPremiumChemistry,
+  baseQuestions.length + mathPremiumQuestions.length + physicsPremiumQuestions.length + biologyPremiumQuestions.length + 1
+);
+
 export const QUESTIONS: Question[] = baseQuestions.concat(
   mathPremiumQuestions,
   physicsPremiumQuestions,
-  biologyPremiumQuestions
+  biologyPremiumQuestions,
+  chemistryPremiumQuestions
 );
