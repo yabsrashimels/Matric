@@ -422,4 +422,13 @@ export const api = {
     if (!res.ok) throw new Error(data.message || 'Failed to import questions');
     return data;
   },
+
+  async getPremiumQuestionsByYear(year: number) {
+    const res = await fetch(`${API_BASE}/questions/premium/year/${year}`, {
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data);
+    return data;
+  },
 };

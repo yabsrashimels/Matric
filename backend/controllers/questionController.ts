@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import db from '../config/db';
+import { AuthenticatedRequest } from '../middleware/auth';
 
 export const getQuestions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { subject, topic, difficulty, year, page = '1', limit = '10', sort } = req.query;
@@ -228,6 +229,83 @@ export const getQuestionsByYear = async (req: Request, res: Response, next: Next
       message: 'Questions by year retrieved successfully',
       data: questions.rows,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Premium endpoint: return full Q&A for a given year only for users who paid >= 100 ETB
+export const getPremiumQuestionsByYear = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  const { year } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ success: false, message: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    let authorized = false;
+    if (req.user?.role === 'admin') {
+      authorized = true;
+    } else {
+      const membershipRes = await db.query(
+        `SELECT p.price
+         FROM user_memberships um
+         JOIN plans p ON um.plan_id = p.id
+         WHERE um.user_id = $1 AND lower(COALESCE(um.status, 'active')) = 'active'`,
+        [userId]
+      );
+
+      const hasMembership = membershipRes.rows.some((row: any) => {
+        const price = parseFloat(row.price);
+        return !Number.isNaN(price) && price >= 100;
+      });
+
+      if (hasMembership) {
+        authorized = true;
+      } else {
+        const receiptRes = await db.query(
+          `SELECT pr.amount
+           FROM payment_receipts pr
+           LEFT JOIN payment_requests preq ON pr.payment_request_id = preq.id
+           WHERE pr.user_id = $1 AND pr.amount >= $2 AND (preq.id IS NULL OR lower(COALESCE(preq.status, '')) = 'approved')`,
+          [userId, 100]
+        );
+
+        if (receiptRes.rows.length > 0) {
+          authorized = true;
+        } else {
+          const paymentRequestRes = await db.query(
+            `SELECT p.price
+             FROM payment_requests preq
+             JOIN plans p ON preq.plan_id = p.id
+             WHERE preq.user_id = $1 AND lower(COALESCE(preq.status, '')) = 'approved' AND p.price >= $2`,
+            [userId, 100]
+          );
+
+          authorized = paymentRequestRes.rows.length > 0;
+        }
+      }
+    }
+
+    if (!authorized) {
+      res.status(402).json({ success: false, message: 'Payment required: this premium content is available only to users who have paid 100 ETB or more.' });
+      return;
+    }
+
+    // Fetch questions for the requested year and subject Mathematics
+    const questionsRes = await db.query(
+      `SELECT q.*, s.name as subject_name, t.name as topic_name
+       FROM questions q
+       JOIN subjects s ON q.subject_id = s.id
+       JOIN topics t ON q.topic_id = t.id
+       WHERE q.year = $1 AND s.name = 'Mathematics'
+       ORDER BY q.id ASC`,
+      [year]
+    );
+
+    res.status(200).json({ success: true, message: 'Premium questions retrieved', data: questionsRes.rows });
   } catch (error) {
     next(error);
   }

@@ -4,6 +4,10 @@ import { BADGES, SUBJECTS } from '../data/questions';
 import { Award, Flame, Zap, CheckCircle2, TrendingUp, ShieldAlert, Sparkles } from 'lucide-react';
 import { LeaderboardEntry } from '../types';
 
+// Lazy-load premium panel to avoid increasing initial bundle size
+const DashboardPremiumLazy = React.lazy(() => import('../components/Premium2014Panel').then(m => ({ default: m.Premium2014Panel })));
+
+
 export const DashboardPage: React.FC = () => {
   const { progress } = useApp();
 
@@ -63,6 +67,18 @@ export const DashboardPage: React.FC = () => {
         <p className="subtitle-main">
           Track your preparation progress, review your achievements, and stay motivated as you move closer to exam readiness.
         </p>
+
+        {/* Premium 2014 panel trigger */}
+        <div style={{ marginTop: '0.75rem' }}>
+          <small style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Premium content</small>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            {/* The Premium2014Panel will handle fetching and showing results */}
+            {/* Lazy-load the panel by dynamic import to keep initial bundle small */}
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <DashboardPremiumLazy />
+            </React.Suspense>
+          </div>
+        </div>
       </div>
 
       {/* Gamification Levels and Streak Header */}

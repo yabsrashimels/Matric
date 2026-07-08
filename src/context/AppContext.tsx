@@ -163,10 +163,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [progress]);
 
-  // Load membership when user or token changes
+  // Load membership when user or token changes, and poll to unlock contents automatically
   useEffect(() => {
     if (token && user) {
       loadMembership();
+
+      const intervalId = setInterval(() => {
+        loadMembership();
+      }, 5000); // Poll every 5s to catch admin approval automatically
+
+      return () => clearInterval(intervalId);
     } else {
       setMembershipPlan(null);
     }
@@ -191,7 +197,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Content-Type': 'application/json',
       ...((options.headers as Record<string, string>) || {}),
     };
-    
+
     // Read fresh token from localStorage if state is stale
     const activeToken = token || localStorage.getItem('ethio_token');
     if (activeToken) {
@@ -354,7 +360,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isLocked = (requiredPlanId?: number): boolean => {
     if (!requiredPlanId || requiredPlanId === 1) return false; // Free content is never locked
     if (user?.role === 'admin') return false; // Admin has complete access
-    
+
     // Fetch active level (1 = Free, 2 = Premium, 3 = Advanced)
     const currentPlanId = membershipPlan?.plan_id || 1;
     return currentPlanId < requiredPlanId;

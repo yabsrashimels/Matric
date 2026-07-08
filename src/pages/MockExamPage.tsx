@@ -11,7 +11,7 @@ interface MockAnswer {
 }
 
 export const MockExamPage: React.FC = () => {
-  const { addXP, playCorrectSound, playIncorrectSound, triggerConfetti } = useApp();
+  const { addXP, playCorrectSound, playIncorrectSound, triggerConfetti, isLocked } = useApp();
 
   const [examActive, setExamActive] = useState(false);
   const [examSubmitted, setExamSubmitted] = useState(false);
@@ -27,9 +27,19 @@ export const MockExamPage: React.FC = () => {
   // Generate random questions for Mock Exam
   const startExam = () => {
     // Pick 10 random questions from pool
-    const shuffled = [...QUESTIONS].sort(() => 0.5 - Math.random());
+    let pool = QUESTIONS;
+    if (isLocked(2)) {
+      pool = QUESTIONS.filter(q => {
+        const sub = q.subject.toLowerCase();
+        const yr = q.year;
+        if (sub === 'mathematics' && [2014, 2015, 2016].includes(yr)) return false;
+        if (sub === 'physics' && [2014, 2015, 2016].includes(yr)) return false;
+        return true;
+      });
+    }
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10);
-    
+
     setMockQuestions(selected);
     setCurrentExamIndex(0);
     setAnswers({});
@@ -109,7 +119,7 @@ export const MockExamPage: React.FC = () => {
   // Group performance results by subject
   const getPerformanceBySubject = () => {
     const subjectsMap: { [sub: string]: { total: number; correct: number } } = {};
-    
+
     mockQuestions.forEach((q) => {
       if (!subjectsMap[q.subject]) {
         subjectsMap[q.subject] = { total: 0, correct: 0 };
@@ -141,9 +151,9 @@ export const MockExamPage: React.FC = () => {
           <Trophy size={60} style={{ color: 'var(--ethio-yellow)', marginBottom: '1.5rem' }} />
           <h2>National Exam Simulation</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '500px', margin: '0.5rem auto 2rem' }}>
-            This mock exam simulates real Grade 12 national exam conditions. You will have <strong>10 minutes (600 seconds)</strong> to answer <strong>10 comprehensive questions</strong> across multiple subjects. 
+            This mock exam simulates real Grade 12 national exam conditions. You will have <strong>10 minutes (600 seconds)</strong> to answer <strong>10 comprehensive questions</strong> across multiple subjects.
           </p>
-          
+
           <div className="card" style={{ backgroundColor: 'var(--bg-tertiary)', padding: '1rem 1.5rem', margin: '0 auto 2rem', maxWidth: '400px', textAlign: 'left', fontSize: '0.85rem' }}>
             <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Exam Regulations:</h4>
             <ul style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -184,8 +194,8 @@ export const MockExamPage: React.FC = () => {
                   const letter = String.fromCharCode(65 + idx);
                   const isSelected = answers[currentQ.id] === option;
                   return (
-                    <button 
-                      key={idx} 
+                    <button
+                      key={idx}
                       className={`option-btn ${isSelected ? 'selected' : ''}`}
                       onClick={() => handleOptionSelect(option)}
                     >
@@ -198,15 +208,15 @@ export const MockExamPage: React.FC = () => {
 
               <div className="question-actions" style={{ marginTop: '2rem' }}>
                 <div className="action-left">
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={() => setCurrentExamIndex(prev => prev - 1)}
                     disabled={currentExamIndex === 0}
                   >
                     <ArrowLeft size={16} /> Previous
                   </button>
-                  <button 
-                    className="btn btn-secondary" 
+                  <button
+                    className="btn btn-secondary"
                     onClick={() => setCurrentExamIndex(prev => prev + 1)}
                     disabled={currentExamIndex === 9}
                   >
@@ -240,14 +250,14 @@ export const MockExamPage: React.FC = () => {
                 {mockQuestions.map((q, idx) => {
                   const isAnswered = !!answers[q.id];
                   const isCurrent = idx === currentExamIndex;
-                  
+
                   let btnClass = 'mock-grid-btn';
                   if (isAnswered) btnClass += ' answered';
                   if (isCurrent) btnClass += ' current';
 
                   return (
-                    <button 
-                      key={q.id} 
+                    <button
+                      key={q.id}
                       className={btnClass}
                       onClick={() => setCurrentExamIndex(idx)}
                     >
@@ -349,12 +359,12 @@ export const MockExamPage: React.FC = () => {
                   </div>
 
                   <h4 style={{ fontWeight: '600', marginBottom: '1rem', fontSize: '1rem' }}>{q.question}</h4>
-                  
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
                     {q.options.map((opt, oIdx) => {
                       const letter = String.fromCharCode(65 + oIdx);
                       let optionStyle: React.CSSProperties = { padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' };
-                      
+
                       if (opt === q.correctAnswer) {
                         optionStyle.backgroundColor = 'rgba(7, 137, 48, 0.1)';
                         optionStyle.borderColor = 'var(--ethio-green)';

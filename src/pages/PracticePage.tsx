@@ -13,7 +13,7 @@ export const PracticePage: React.FC = () => {
   const {
     progress, answerQuestion, toggleFavorite, saveNote,
     playCorrectSound, playIncorrectSound, triggerConfetti,
-    selectedSubject, setSelectedSubject
+    selectedSubject, setSelectedSubject, isLocked, membershipPlan
   } = useApp();
 
   const [questionPool, setQuestionPool] = useState<Question[]>(QUESTIONS);
@@ -76,8 +76,17 @@ export const PracticePage: React.FC = () => {
             } as Question;
           });
 
-          setQuestionPool(mappedQuestions);
-          setSubjectOptions(Array.from(new Set(mappedQuestions.map((question) => question.subject))) as string[]);
+          // Combine with bundled static QUESTIONS (e.g. 2014 Math JSON)
+          const dbTexts = new Set(mappedQuestions.map(q => q.question));
+          const uniqueStatic = QUESTIONS.filter(q => !dbTexts.has(q.question)).map(q => ({
+            ...q,
+            id: q.id + 100000 // Offset ID to avoid collision with DB primary keys
+          }));
+
+          const combinedQuestions = [...mappedQuestions, ...uniqueStatic];
+
+          setQuestionPool(combinedQuestions);
+          setSubjectOptions(Array.from(new Set(combinedQuestions.map((question) => question.subject))) as string[]);
           setIsLoadingQuestions(false);
           return;
         }
@@ -96,6 +105,17 @@ export const PracticePage: React.FC = () => {
   // Apply filters
   useEffect(() => {
     let result = questionPool;
+
+    // Filter out locked Premium questions (Math & Physics 2014/2015/2016 — requires 100 ETB)
+    if (isLocked(2)) {
+      result = result.filter(q => {
+        const sub = q.subject.toLowerCase();
+        const yr = q.year;
+        if (sub === 'mathematics' && [2014, 2015, 2016].includes(yr)) return false;
+        if (sub === 'physics' && [2014, 2015, 2016].includes(yr)) return false;
+        return true;
+      });
+    }
 
     // Subject
     if (subjectFilter !== 'All') {
@@ -136,7 +156,7 @@ export const PracticePage: React.FC = () => {
     setSelectedOption(null);
     setIsAnswered(false);
     setShowHint(false);
-  }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds]);
+  }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds, membershipPlan]);
 
   // Load saved note for the current question
   useEffect(() => {
@@ -303,9 +323,9 @@ export const PracticePage: React.FC = () => {
             <label>Matric Year</label>
             <select className="filter-select" value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
               <option value="All">All Years</option>
-              <option value="2024">2024 Exam</option>
-              <option value="2023">2023 Exam</option>
-              <option value="2022">2022 Exam</option>
+              <option value="2016">2016 Exam</option>
+              <option value="2015">2015 Exam</option>
+              <option value="2014">2014 Exam</option>
             </select>
           </div>
 

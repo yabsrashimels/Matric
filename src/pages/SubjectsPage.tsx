@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import { Calculator, Atom, Beaker, Dna, BookOpen, Cpu, Milestone, Globe, Shield, Coins } from 'lucide-react';
 
 export const SubjectsPage: React.FC = () => {
-  const { progress, setActivePage, setSelectedSubject } = useApp();
+  const { progress, setActivePage, setSelectedSubject, isLocked, membershipPlan } = useApp();
   const [displaySubjects, setDisplaySubjects] = useState(SUBJECTS);
 
   const getSubjectIcon = (iconName: string, size = 24) => {
@@ -36,8 +36,24 @@ export const SubjectsPage: React.FC = () => {
         const liveQuestions = Array.isArray(questionsRes?.data?.questions) ? questionsRes.data.questions : [];
 
         if (liveSubjects.length > 0) {
-          const questionCountBySubject = liveQuestions.reduce((acc: Record<string, number>, question: any) => {
+          const importedQuestions = await import('../data/questions');
+          const staticQuestions = importedQuestions.QUESTIONS;
+
+          const dbTexts = new Set(liveQuestions.map((q: any) => q.question));
+          const uniqueStatic = staticQuestions.filter(q => !dbTexts.has(q.question));
+
+          const combinedQuestions = [...liveQuestions, ...uniqueStatic];
+
+          const questionCountBySubject = combinedQuestions.reduce((acc: Record<string, number>, question: any) => {
             const subjectName = question.subject_name || question.subject || 'General';
+            const year = question.year;
+            const sub = subjectName.toLowerCase();
+            if (isLocked(2) && (
+              (sub === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
+              (sub === 'physics' && [2014, 2015, 2016].includes(year))
+            )) {
+              return acc;
+            }
             acc[subjectName] = (acc[subjectName] || 0) + 1;
             return acc;
           }, {});
@@ -61,11 +77,35 @@ export const SubjectsPage: React.FC = () => {
         console.warn('Unable to load live subjects, using bundled subject list.', error);
       }
 
-      setDisplaySubjects(SUBJECTS);
+      // Handle bundled QUESTION count (respects premium lock)
+      import('../data/questions').then(({ QUESTIONS }) => {
+        const premiumLockedSubjects = isLocked(2)
+          ? QUESTIONS.filter(q => {
+            const sub = q.subject.toLowerCase();
+            return (
+              (sub === 'mathematics' && [2014, 2015, 2016].includes(q.year)) ||
+              (sub === 'physics' && [2014, 2015, 2016].includes(q.year))
+            );
+          })
+          : [];
+
+        const lockedTexts = new Set(premiumLockedSubjects.map(q => q.question));
+
+        const visibleBySubject: Record<string, number> = {};
+        QUESTIONS.forEach(q => {
+          if (lockedTexts.has(q.question)) return;
+          visibleBySubject[q.subject] = (visibleBySubject[q.subject] || 0) + 1;
+        });
+
+        setDisplaySubjects(SUBJECTS.map(s => ({
+          ...s,
+          questionCount: visibleBySubject[s.name] ?? s.questionCount
+        })));
+      });
     };
 
     loadSubjects();
-  }, []);
+  }, [isLocked, membershipPlan]);
 
   const handleStartSubject = (subjectName: string) => {
     setSelectedSubject(subjectName);
@@ -89,7 +129,7 @@ export const SubjectsPage: React.FC = () => {
           // Determine visual styling theme based on subject
           let iconColor = 'var(--ethio-green)';
           let bgColor = 'var(--accent-light)';
-          
+
           if (sub.id === 'math' || sub.id === 'physics') {
             iconColor = 'var(--ethio-red)';
             bgColor = 'var(--danger-light)';
@@ -112,7 +152,7 @@ export const SubjectsPage: React.FC = () => {
                 </div>
                 <span className={`subject-badge ${sub.difficulty.toLowerCase()}`}>{sub.difficulty}</span>
               </div>
-              
+
               <h3>{sub.name}</h3>
               <p>{sub.description}</p>
 
@@ -129,9 +169,9 @@ export const SubjectsPage: React.FC = () => {
                   <span>{solvedStats.answered} / {sub.questionCount}</span>
                 </div>
                 <div className="subject-progress-bar">
-                  <div 
-                    className="subject-progress-fill" 
-                    style={{ 
+                  <div
+                    className="subject-progress-fill"
+                    style={{
                       width: `${percentSolved}%`,
                       backgroundColor: percentSolved === 100 ? 'var(--ethio-green)' : iconColor
                     }}
@@ -139,9 +179,9 @@ export const SubjectsPage: React.FC = () => {
                 </div>
               </div>
 
-              <button 
-                className="btn btn-primary" 
-                style={{ width: '100%', marginTop: 'auto' }} 
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: 'auto' }}
                 onClick={() => handleStartSubject(sub.name)}
               >
                 {solvedStats.answered > 0 ? 'Continue Prep' : 'Begin Practice'}

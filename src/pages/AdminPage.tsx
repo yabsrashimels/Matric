@@ -12,17 +12,17 @@ const formatDisplayDate = (value: string | null | undefined) => {
 
   return date.toLocaleString();
 };
-import { 
+import {
   Users, BookOpen, Target, Award, Key, Shield, LogIn, UserPlus, LogOut,
-  RefreshCw, Search, Edit, Trash2, CheckCircle2, AlertTriangle, 
+  RefreshCw, Search, Edit, Trash2, CheckCircle2, AlertTriangle,
   Plus, X, BarChart3, Bell, Eye, Database, FileText, LayoutDashboard,
   Check, Info, Clock, Calendar, HelpCircle, Ban, ArrowUpCircle, Settings
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useApp } from '../context/AppContext';
-import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
-  CartesianGrid, Tooltip, BarChart, Bar, Legend, Cell 
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  CartesianGrid, Tooltip, BarChart, Bar, Legend, Cell
 } from 'recharts';
 
 interface User {
@@ -60,7 +60,7 @@ export const AdminPage: React.FC = () => {
   // Stats & logs
   const [stats, setStats] = useState<any>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  
+
   // Student controls
   const [users, setUsers] = useState<User[]>([]);
   const [searchUserQuery, setSearchUserQuery] = useState('');
@@ -312,9 +312,9 @@ export const AdminPage: React.FC = () => {
       loadUsers();
       if (showUserModal) {
         const planName = planId === 1 ? 'Free' : planId === 2 ? 'Premium' : 'Advanced';
-        setSelectedUserDetail((prev: any) => ({ 
-          ...prev, 
-          membership: { ...prev.membership, plan_id: planId, plan_name: planName } 
+        setSelectedUserDetail((prev: any) => ({
+          ...prev,
+          membership: { ...prev.membership, plan_id: planId, plan_name: planName }
         }));
       }
     } catch (e: any) {
@@ -465,7 +465,7 @@ export const AdminPage: React.FC = () => {
 
   // Bulk Operations (Checkboxes)
   const toggleSelectQuestion = (id: number) => {
-    setSelectedQuestionIds(prev => 
+    setSelectedQuestionIds(prev =>
       prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
     );
   };
@@ -502,8 +502,12 @@ export const AdminPage: React.FC = () => {
     if (!bulkImportText.trim()) return;
     try {
       let parsedArray: any[] = [];
+      const trimmedText = bulkImportText.trim();
+      const fencedMatch = trimmedText.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+      const jsonCandidate = fencedMatch ? fencedMatch[1].trim() : trimmedText;
+
       try {
-        const parsed = JSON.parse(bulkImportText);
+        const parsed = JSON.parse(jsonCandidate);
         parsedArray = Array.isArray(parsed)
           ? parsed
           : Array.isArray(parsed?.questions)
@@ -515,46 +519,69 @@ export const AdminPage: React.FC = () => {
                 : [];
       } catch {
         // Fallback simple line CSV parser
-        const lines = bulkImportText.trim().split('\n');
-        parsedArray = lines.map(line => {
-          const parts = line.split(',');
-          return {
-            subject_id: parseInt(parts[0]) || subjects[0]?.id,
-            topic_id: parseInt(parts[1]) || topics[0]?.id,
-            year: parseInt(parts[2]) || 2016,
-            difficulty: parts[3]?.trim() || 'Medium',
-            question: parts[4]?.trim() || 'Empty Question text',
-            option_a: parts[5]?.trim() || 'A',
-            option_b: parts[6]?.trim() || 'B',
-            option_c: parts[7]?.trim() || 'C',
-            option_d: parts[8]?.trim() || 'D',
-            correct_answer: parts[9]?.trim() || 'A',
-            explanation: parts[10]?.trim() || '',
-            plan_id: bulkPlanId
-          };
-        });
+        const lines = trimmedText.split('\n');
+        parsedArray = lines
+          .map(line => line.trim())
+          .filter(Boolean)
+          .map(line => {
+            const parts = line.split(',');
+            return {
+              subject_id: parseInt(parts[0]) || subjects[0]?.id,
+              topic_id: parseInt(parts[1]) || topics[0]?.id,
+              year: parseInt(parts[2]) || 2016,
+              difficulty: parts[3]?.trim() || 'Medium',
+              question: parts[4]?.trim() || 'Empty Question text',
+              option_a: parts[5]?.trim() || 'A',
+              option_b: parts[6]?.trim() || 'B',
+              option_c: parts[7]?.trim() || 'C',
+              option_d: parts[8]?.trim() || 'D',
+              correct_answer: parts[9]?.trim() || 'A',
+              explanation: parts[10]?.trim() || '',
+              plan_id: bulkPlanId
+            };
+          });
       }
 
       if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
         throw new Error('Parsed format is not an array of questions');
       }
 
-      const normalizedQuestions = parsedArray.map((q: any) => ({
-        ...q,
-        subject_id: q.subject_id ?? q.subjectId ?? q.subject ?? q.subject_name ?? '',
-        topic_id: q.topic_id ?? q.topicId ?? q.topic ?? q.topic_name ?? '',
-        question: q.question ?? q.question_text ?? q.prompt ?? q.statement ?? q.text ?? '',
-        option_a: q.option_a ?? q.optionA ?? q.option1 ?? q.option_1 ?? q.a ?? '',
-        option_b: q.option_b ?? q.optionB ?? q.option2 ?? q.option_2 ?? q.b ?? '',
-        option_c: q.option_c ?? q.optionC ?? q.option3 ?? q.option_3 ?? q.c ?? '',
-        option_d: q.option_d ?? q.optionD ?? q.option4 ?? q.option_4 ?? q.d ?? '',
-        correct_answer: q.correct_answer ?? q.correctAnswer ?? q.answer ?? q.correct_option ?? q.correctOption ?? '',
-        explanation: q.explanation ?? q.explanation_text ?? q.explanationText ?? '',
-        reference: q.reference ?? q.reference_text ?? q.referenceText ?? '',
-        hint: q.hint ?? q.hint_text ?? q.hintText ?? '',
-        estimated_time: q.estimated_time ?? q.estimatedTime ?? q.time ?? 60,
-        plan_id: q.plan_id ?? q.planId ?? bulkPlanId,
-      }));
+      const normalizedQuestions = parsedArray.map((q: any) => {
+        const optionsObject = q.options ?? q.choices ?? q.options_obj ?? q.optionsObject;
+        const optionA = q.option_a ?? q.optionA ?? q.option1 ?? q.option_1 ?? q.a
+          ?? (optionsObject && typeof optionsObject === 'object' && !Array.isArray(optionsObject)
+            ? optionsObject.a ?? optionsObject.option_a ?? optionsObject.optionA ?? optionsObject.option1 ?? optionsObject.option_1
+            : undefined);
+        const optionB = q.option_b ?? q.optionB ?? q.option2 ?? q.option_2 ?? q.b
+          ?? (optionsObject && typeof optionsObject === 'object' && !Array.isArray(optionsObject)
+            ? optionsObject.b ?? optionsObject.option_b ?? optionsObject.optionB ?? optionsObject.option2 ?? optionsObject.option_2
+            : undefined);
+        const optionC = q.option_c ?? q.optionC ?? q.option3 ?? q.option_3 ?? q.c
+          ?? (optionsObject && typeof optionsObject === 'object' && !Array.isArray(optionsObject)
+            ? optionsObject.c ?? optionsObject.option_c ?? optionsObject.optionC ?? optionsObject.option3 ?? optionsObject.option_3
+            : undefined);
+        const optionD = q.option_d ?? q.optionD ?? q.option4 ?? q.option_4 ?? q.d
+          ?? (optionsObject && typeof optionsObject === 'object' && !Array.isArray(optionsObject)
+            ? optionsObject.d ?? optionsObject.option_d ?? optionsObject.optionD ?? optionsObject.option4 ?? optionsObject.option_4
+            : undefined);
+
+        return {
+          ...q,
+          subject_id: q.subject_id ?? q.subjectId ?? q.subject ?? q.subject_name ?? '',
+          topic_id: q.topic_id ?? q.topicId ?? q.topic ?? q.topic_name ?? '',
+          question: q.question ?? q.question_text ?? q.prompt ?? q.statement ?? q.text ?? '',
+          option_a: optionA ?? '',
+          option_b: optionB ?? '',
+          option_c: optionC ?? '',
+          option_d: optionD ?? '',
+          correct_answer: q.correct_answer ?? q.correctAnswer ?? q.answer ?? q.correct_option ?? q.correctOption ?? '',
+          explanation: q.explanation ?? q.explanation_text ?? q.explanationText ?? '',
+          reference: q.reference ?? q.reference_text ?? q.referenceText ?? '',
+          hint: q.hint ?? q.hint_text ?? q.hintText ?? '',
+          estimated_time: q.estimated_time ?? q.estimatedTime ?? q.time ?? 60,
+          plan_id: q.plan_id ?? q.planId ?? bulkPlanId,
+        };
+      });
 
       await api.importQuestions(normalizedQuestions);
       alert(`Successfully imported ${normalizedQuestions.length} questions in bulk!`);
@@ -673,7 +700,7 @@ export const AdminPage: React.FC = () => {
           <div className="auth-icon-badge" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--ethio-red)' }}>🔒</div>
           <h2>System Restricted</h2>
           <p>This panel is exclusively reserved for the national curriculum administrator. Please sign in with an administrator account to continue.</p>
-          <button 
+          <button
             onClick={() => {
               // Redirect to main login page
               window.location.hash = '#login';
@@ -692,7 +719,7 @@ export const AdminPage: React.FC = () => {
 
   return (
     <div className="admin-dashboard-container" id="admin-main-dashboard">
-      
+
       {/* 1. Header with real-time stats */}
       <div className="admin-main-header">
         <div className="admin-welcome-block">
@@ -701,16 +728,16 @@ export const AdminPage: React.FC = () => {
           <p>Logged in as: <strong>{operatorName}</strong></p>
         </div>
         <div className="admin-actions-block">
-          <button 
-            onClick={() => { loadStats(); loadPayments(); }} 
+          <button
+            onClick={() => { loadStats(); loadPayments(); }}
             className="sync-btn"
           >
             <RefreshCw size={16} /> Sync Database
           </button>
-          <button 
+          <button
             onClick={() => {
               logout();
-            }} 
+            }}
             className="sync-btn logout-btn"
             id="admin-dashboard-logout-btn"
             style={{ background: '#ef4444', color: 'white', border: 'none', marginLeft: '0.75rem' }}
@@ -745,7 +772,7 @@ export const AdminPage: React.FC = () => {
       {/* 3. Tab contents */}
       <div className="admin-tab-content-panel">
         <AnimatePresence mode="wait">
-          
+
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'dashboard' && stats && (
             <motion.div
@@ -780,7 +807,7 @@ export const AdminPage: React.FC = () => {
 
               {/* Charts and activity list */}
               <div className="dashboard-sub-flex" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-                
+
                 {/* System Alerts */}
                 <div className="admin-inner-card">
                   <h4>System Notification Logs</h4>
@@ -790,14 +817,14 @@ export const AdminPage: React.FC = () => {
                       <p style={{ textAlign: 'center', opacity: 0.5, padding: '2rem 0' }}>No active system alerts.</p>
                     ) : (
                       notifications.map(n => (
-                        <div 
-                          key={n.id} 
+                        <div
+                          key={n.id}
                           onClick={() => !n.is_read && handleMarkNotificationRead(n.id)}
                           className={`system-notif-row ${n.is_read ? 'read' : 'unread'}`}
-                          style={{ 
-                            padding: '0.75rem', 
-                            borderRadius: '8px', 
-                            marginBottom: '0.5rem', 
+                          style={{
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            marginBottom: '0.5rem',
                             borderLeft: n.is_read ? '3px solid var(--border-color)' : '3px solid var(--ethio-red)',
                             background: n.is_read ? 'transparent' : 'rgba(239, 68, 68, 0.05)',
                             cursor: 'pointer'
@@ -888,8 +915,8 @@ export const AdminPage: React.FC = () => {
                           </span>
                         </td>
                         <td>
-                          <select 
-                            value={u.role} 
+                          <select
+                            value={u.role}
                             onChange={(e) => handleChangeMembership(u.id, 1).then(() => api.updateAdminUser(u.id, { role: e.target.value })).then(loadUsers)}
                             style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
                           >
@@ -989,14 +1016,14 @@ export const AdminPage: React.FC = () => {
                           <td>
                             {(String(p.status).toLowerCase() === 'pending') && (
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button 
+                                <button
                                   onClick={() => handleApprovePayment(p.id)}
                                   className="action-btn-small"
                                   style={{ background: 'var(--ethio-green)', color: 'white', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}
                                 >
                                   Approve
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => setShowRejectModal(p.id)}
                                   className="action-btn-small"
                                   style={{ background: 'var(--ethio-red)', color: 'white', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}
@@ -1388,8 +1415,8 @@ export const AdminPage: React.FC = () => {
                         <label>Subject *</label>
                         <select value={questionForm.subject_id} onChange={e => {
                           const subId = parseInt(e.target.value);
-                          setQuestionForm({ 
-                            ...questionForm, 
+                          setQuestionForm({
+                            ...questionForm,
                             subject_id: e.target.value,
                             topic_id: topics.filter(t => t.subject_id === subId)[0]?.id?.toString() || ''
                           });
@@ -1475,7 +1502,7 @@ export const AdminPage: React.FC = () => {
                     </div>
                     <div style={{ marginTop: '1rem' }}>
                       <p style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '0.5rem' }}>Paste a valid JSON questions array, or comma-separated CSV values. Each item must contain subject, topic, year, difficulty, question statement, options, correct answer, and explanation.</p>
-                      
+
                       <div className="form-group" style={{ marginBottom: '1rem' }}>
                         <label>Required Subscription Tier for Imported Batch</label>
                         <select value={bulkPlanId} onChange={e => setBulkPlanId(parseInt(e.target.value) || 1)} style={{ width: '100%', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
@@ -1491,7 +1518,7 @@ export const AdminPage: React.FC = () => {
                         placeholder='[{
                           "subject": "Mathematics",
                           "topic": "Differentiation",
-                          "year": 2024,
+                          "year": 2016,
                           "difficulty": "Medium",
                           "question": "If f(x) = x^2 + 3x, what is f(x)?",
                           "option_a": "2x + 3",
@@ -1504,7 +1531,7 @@ export const AdminPage: React.FC = () => {
                           "hint": "Use the power rule",
                           "estimated_time": 30
                         }] '
-                                              style={{ width: '100%', minHeight: '180px', padding: '0.5rem', fontFamily: 'monospace', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+                        style={{ width: '100%', minHeight: '180px', padding: '0.5rem', fontFamily: 'monospace', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
                       />
 
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
@@ -1530,7 +1557,7 @@ export const AdminPage: React.FC = () => {
               <h3>Detailed Profile Audit Logs ({selectedUserDetail.user.first_name})</h3>
               <button onClick={() => setShowUserModal(false)} className="close-modal-btn"><X size={18} /></button>
             </div>
-            
+
             <div className="user-audit-body" style={{ marginTop: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Personal */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px' }}>

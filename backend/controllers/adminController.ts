@@ -665,10 +665,14 @@ export const importQuestions = async (req: Request, res: Response, next: NextFun
 
       const cacheKey = text.toLowerCase();
       const cached = subjectCache.get(cacheKey);
-      if (cached) return cached;
+      if (cached !== undefined) return cached;
 
       const subjectRes = await db.query('SELECT id FROM subjects WHERE LOWER(name) = LOWER($1) LIMIT 1', [text]);
-      const resolvedId = subjectRes.rows[0]?.id ? parseInt(subjectRes.rows[0].id, 10) : null;
+      let resolvedId = subjectRes.rows[0]?.id ? parseInt(subjectRes.rows[0].id, 10) : null;
+      if (!resolvedId) {
+        const created = await db.query('INSERT INTO subjects (name) VALUES ($1) RETURNING id', [text]);
+        resolvedId = created.rows[0]?.id ? parseInt(created.rows[0].id, 10) : null;
+      }
       if (resolvedId) subjectCache.set(cacheKey, resolvedId);
       return resolvedId;
     };
@@ -682,12 +686,16 @@ export const importQuestions = async (req: Request, res: Response, next: NextFun
 
       const cacheKey = `${subjectId ?? 'none'}:${text.toLowerCase()}`;
       const cached = topicCache.get(cacheKey);
-      if (cached) return cached;
+      if (cached !== undefined) return cached;
 
       const topicRes = subjectId
         ? await db.query('SELECT id FROM topics WHERE LOWER(name) = LOWER($1) AND subject_id = $2 LIMIT 1', [text, subjectId])
         : await db.query('SELECT id FROM topics WHERE LOWER(name) = LOWER($1) LIMIT 1', [text]);
-      const resolvedId = topicRes.rows[0]?.id ? parseInt(topicRes.rows[0].id, 10) : null;
+      let resolvedId = topicRes.rows[0]?.id ? parseInt(topicRes.rows[0].id, 10) : null;
+      if (!resolvedId && subjectId) {
+        const created = await db.query('INSERT INTO topics (subject_id, name) VALUES ($1, $2) RETURNING id', [subjectId, text]);
+        resolvedId = created.rows[0]?.id ? parseInt(created.rows[0].id, 10) : null;
+      }
       if (resolvedId) topicCache.set(cacheKey, resolvedId);
       return resolvedId;
     };
@@ -707,10 +715,23 @@ export const importQuestions = async (req: Request, res: Response, next: NextFun
       const year = getFirstDefinedValue(q, ['year', 'exam_year', 'year_of_exam']);
       const difficulty = getFirstDefinedValue(q, ['difficulty', 'difficulty_level', 'difficultyLevel']);
       const question = getFirstDefinedValue(q, ['question', 'question_text', 'prompt', 'statement', 'text']);
-      const optionA = getFirstDefinedValue(q, ['option_a', 'optionA', 'option1', 'option_1', 'a']);
-      const optionB = getFirstDefinedValue(q, ['option_b', 'optionB', 'option2', 'option_2', 'b']);
-      const optionC = getFirstDefinedValue(q, ['option_c', 'optionC', 'option3', 'option_3', 'c']);
-      const optionD = getFirstDefinedValue(q, ['option_d', 'optionD', 'option4', 'option_4', 'd']);
+      const optionsPayload = getFirstDefinedValue(q, ['options', 'choices', 'options_obj', 'optionsObject']);
+      const optionA = getFirstDefinedValue(q, ['option_a', 'optionA', 'option1', 'option_1', 'a'])
+        ?? (optionsPayload && typeof optionsPayload === 'object' && !Array.isArray(optionsPayload)
+          ? optionsPayload.a ?? optionsPayload.option_a ?? optionsPayload.optionA ?? optionsPayload.option1 ?? optionsPayload.option_1
+          : undefined);
+      const optionB = getFirstDefinedValue(q, ['option_b', 'optionB', 'option2', 'option_2', 'b'])
+        ?? (optionsPayload && typeof optionsPayload === 'object' && !Array.isArray(optionsPayload)
+          ? optionsPayload.b ?? optionsPayload.option_b ?? optionsPayload.optionB ?? optionsPayload.option2 ?? optionsPayload.option_2
+          : undefined);
+      const optionC = getFirstDefinedValue(q, ['option_c', 'optionC', 'option3', 'option_3', 'c'])
+        ?? (optionsPayload && typeof optionsPayload === 'object' && !Array.isArray(optionsPayload)
+          ? optionsPayload.c ?? optionsPayload.option_c ?? optionsPayload.optionC ?? optionsPayload.option3 ?? optionsPayload.option_3
+          : undefined);
+      const optionD = getFirstDefinedValue(q, ['option_d', 'optionD', 'option4', 'option_4', 'd'])
+        ?? (optionsPayload && typeof optionsPayload === 'object' && !Array.isArray(optionsPayload)
+          ? optionsPayload.d ?? optionsPayload.option_d ?? optionsPayload.optionD ?? optionsPayload.option4 ?? optionsPayload.option_4
+          : undefined);
       const correctAnswer = getFirstDefinedValue(q, ['correct_answer', 'correctAnswer', 'answer', 'correct_option', 'correctOption']);
       const explanation = getFirstDefinedValue(q, ['explanation', 'explanation_text', 'explanationText']);
       const reference = getFirstDefinedValue(q, ['reference', 'reference_text', 'referenceText']);

@@ -6,6 +6,7 @@ import {
   getQuestionsBySubject,
   getQuestionsByTopic,
   getQuestionsByYear,
+  getPremiumQuestionsByYear,
   getQuestionsByDifficulty,
   createQuestion,
   updateQuestion,
@@ -22,6 +23,8 @@ router.get('/search', searchQuestions);
 router.get('/subject/:subjectId', getQuestionsBySubject);
 router.get('/topic/:topicId', getQuestionsByTopic);
 router.get('/year/:year', getQuestionsByYear);
+// Premium: only accessible to authenticated users who have paid qualifying membership
+router.get('/premium/year/:year', authenticateToken, getPremiumQuestionsByYear);
 router.get('/difficulty/:difficulty', getQuestionsByDifficulty);
 router.get('/:id', getQuestionById);
 

@@ -1,4 +1,10 @@
 import { Question, Subject, Badge } from '../types';
+import math2014 from './matric_math_2014EC_practice.json';
+import math2015 from './maths/matric_math_2015EC_practice.json.json';
+import math2016 from './maths/matric_math_2016EC_practice.json.json';
+import physics2014 from './physics/matric_physics_2014ET.json';
+import physics2015 from './physics/matric_physics_2015Et.json';
+import physics2016 from './physics/matric_physics_2016Et.json';
 
 export const SUBJECTS: Subject[] = [
   {
@@ -128,15 +134,16 @@ export const BADGES: Badge[] = [
   }
 ];
 
-export const QUESTIONS: Question[] = [
+// Keep base questions in `baseQuestions` then merge with imported 2014 math items below.
+const baseQuestions: Question[] = [
   // MATHEMATICS
   {
     id: 1,
     subject: 'Mathematics',
     topic: 'Differentiation',
     difficulty: 'Medium',
-    year: 2024,
-    question: 'If f(x) = ln(x² + 3x), what is f\'(x)?',
+    year: 2016,
+    question: 'If f(x) = ln(x² + 3x), what is f\' (x)?',
     options: [
       '1 / (x² + 3x)',
       '(2x + 3) / (x² + 3x)',
@@ -144,10 +151,10 @@ export const QUESTIONS: Question[] = [
       '(x² + 3x) / (2x + 3)'
     ],
     correctAnswer: '(2x + 3) / (x² + 3x)',
-    explanation: 'By applying the chain rule of differentiation: d/dx[ln(g(x))] = g\'(x) / g(x). Here, g(x) = x² + 3x, so g\'(x) = 2x + 3. Thus, f\'(x) = (2x + 3) / (x² + 3x). This is a frequent concept in the Grade 12 National Exam under differentiation.',
+    explanation: 'By applying the chain rule of differentiation: d/dx[ln(g(x))] = g\' (x) / g(x). Here, g(x) = x² + 3x, so g\' (x) = 2x + 3. Thus, f\' (x) = (2x + 3) / (x² + 3x). This is a frequent concept in the Grade 12 National Exam under differentiation.',
     incorrectExplanations: {
       '1 / (x² + 3x)': 'This only differentiates the natural log outer function without applying the Chain Rule to the inner function (x² + 3x).',
-      '2x + 3': 'This is only the derivative of the inner function g\'(x). It neglects the natural log outer function.',
+      '2x + 3': 'This is only the derivative of the inner function g\' (x). It neglects the natural log outer function.',
       '(x² + 3x) / (2x + 3)': 'This is the reciprocal of the correct derivative. Remember that derivative of ln(u) is u\'/u, not u/u\'.'
     },
     reference: 'Grade 12 Mathematics Textbook, Unit 3: Introduction to Calculus',
@@ -159,7 +166,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Mathematics',
     topic: 'Matrices',
     difficulty: 'Hard',
-    year: 2023,
+    year: 2015,
     question: 'What is the determinant of the matrix A = [[2, 1], [4, 7]]?',
     options: [
       '10',
@@ -183,7 +190,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Mathematics',
     topic: 'Limits',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'Find the limit: lim(x -> 3) (x² - 9) / (x - 3).',
     options: [
       '3',
@@ -207,7 +214,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Mathematics',
     topic: 'Integration',
     difficulty: 'Hard',
-    year: 2022,
+    year: 2014,
     question: 'Evaluate the definite integral: ∫(from 0 to 2) 3x² dx.',
     options: [
       '4',
@@ -233,7 +240,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Physics',
     topic: 'Rotational Motion',
     difficulty: 'Hard',
-    year: 2024,
+    year: 2016,
     question: 'A flywheel accelerates from rest to an angular velocity of 12 rad/s in 4 seconds. What is its angular acceleration in rad/s²?',
     options: [
       '3 rad/s²',
@@ -257,7 +264,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Physics',
     topic: 'Electromagnetism',
     difficulty: 'Medium',
-    year: 2023,
+    year: 2015,
     question: 'According to Faraday\'s law of electromagnetic induction, what is induced in a coil when the magnetic flux linking it changes?',
     options: [
       'Electric Charge',
@@ -281,7 +288,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Physics',
     topic: 'Thermodynamics',
     difficulty: 'Hard',
-    year: 2022,
+    year: 2014,
     question: 'In which thermodynamic process does the volume of the gas remain constant?',
     options: [
       'Isothermal Process',
@@ -307,7 +314,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Chemistry',
     topic: 'Chemical Kinetics',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'What is the unit of the rate constant (k) for a first-order chemical reaction?',
     options: [
       'mol / (L · s)',
@@ -331,7 +338,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Chemistry',
     topic: 'Electrochemistry',
     difficulty: 'Medium',
-    year: 2023,
+    year: 2015,
     question: 'In an electrochemical cell (Galvanic cell), where does the oxidation half-reaction occur?',
     options: [
       'Cathode',
@@ -355,7 +362,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Chemistry',
     topic: 'Chemical Equilibrium',
     difficulty: 'Hard',
-    year: 2024,
+    year: 2016,
     question: 'For the exothermic reaction: N₂(g) + 3H₂(g) ⇌ 2NH₃(g) + Heat, what happens to the equilibrium if the temperature is increased?',
     options: [
       'Shifts to the right (more NH₃ produced)',
@@ -381,7 +388,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Biology',
     topic: 'Genetics',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'If a plant heterozygous for tallness (Tt) is crossed with a homozygous recessive dwarf plant (tt), what is the expected phenotypic ratio of tall to dwarf offspring?',
     options: [
       '3:1',
@@ -405,7 +412,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Biology',
     topic: 'Cellular Respiration',
     difficulty: 'Hard',
-    year: 2023,
+    year: 2015,
     question: 'What is the primary site of ATP synthesis during the electron transport chain of cellular respiration?',
     options: [
       'Cytoplasm',
@@ -429,7 +436,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Biology',
     topic: 'Human Biology',
     difficulty: 'Easy',
-    year: 2022,
+    year: 2014,
     question: 'Which hormone is responsible for lowering blood glucose levels by promoting its uptake into body cells?',
     options: [
       'Glucagon',
@@ -455,7 +462,7 @@ export const QUESTIONS: Question[] = [
     subject: 'English',
     topic: 'Grammar',
     difficulty: 'Easy',
-    year: 2024,
+    year: 2016,
     question: 'Complete the sentence: If I _______ his phone number, I would have called him yesterday.',
     options: [
       'had known',
@@ -479,7 +486,7 @@ export const QUESTIONS: Question[] = [
     subject: 'English',
     topic: 'Vocabulary',
     difficulty: 'Easy',
-    year: 2023,
+    year: 2015,
     question: 'Choose the correct preposition: She has been living in Addis Ababa _______ 2018.',
     options: [
       'for',
@@ -503,7 +510,7 @@ export const QUESTIONS: Question[] = [
     subject: 'English',
     topic: 'Word Order',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'Identify the correct word order for the descriptive adjectives: She bought a _______ table.',
     options: [
       'beautiful round wooden brown',
@@ -529,7 +536,7 @@ export const QUESTIONS: Question[] = [
     subject: 'ICT',
     topic: 'Networking',
     difficulty: 'Easy',
-    year: 2023,
+    year: 2015,
     question: 'Which of the following IP addresses represents a private IPv4 address often used in local area networks (LAN)?',
     options: [
       '8.8.8.8',
@@ -553,7 +560,7 @@ export const QUESTIONS: Question[] = [
     subject: 'ICT',
     topic: 'Web Design',
     difficulty: 'Easy',
-    year: 2024,
+    year: 2016,
     question: 'Which HTML tag is used to create a hyperlink to another web page?',
     options: [
       '&lt;link&gt;',
@@ -579,7 +586,7 @@ export const QUESTIONS: Question[] = [
     subject: 'History',
     topic: 'Ethiopian History',
     difficulty: 'Medium',
-    year: 2023,
+    year: 2015,
     question: 'In which year did the historic Battle of Adwa take place, resulting in an Ethiopian victory over the Italian forces?',
     options: [
       '1889',
@@ -603,7 +610,7 @@ export const QUESTIONS: Question[] = [
     subject: 'History',
     topic: 'African Decolonization',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'Which conference in 1884-1885 laid down the ground rules for the partition and colonization of Africa by European powers?',
     options: [
       'The Berlin Conference',
@@ -629,7 +636,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Geography',
     topic: 'Drainage Systems',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'Which of the following rivers is the longest and drains into the Mediterranean Sea, with its main source being Lake Tana in Ethiopia?',
     options: [
       'The Abbay River (Blue Nile)',
@@ -653,7 +660,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Geography',
     topic: 'Climate Zones',
     difficulty: 'Medium',
-    year: 2023,
+    year: 2015,
     question: 'In the traditional climate zoning of Ethiopia, which zone represents the cold highland areas located at altitudes above 3,300 meters?',
     options: [
       'Wurch (Alpine)',
@@ -679,7 +686,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Civics',
     topic: 'Constitution',
     difficulty: 'Easy',
-    year: 2022,
+    year: 2014,
     question: 'When was the current Federal Democratic Republic of Ethiopia (FDRE) Constitution officially adopted?',
     options: [
       '1987',
@@ -703,7 +710,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Civics',
     topic: 'Human Rights',
     difficulty: 'Easy',
-    year: 2024,
+    year: 2016,
     question: 'Which of the following is considered a primary democratic right under the FDRE Constitution?',
     options: [
       'Right to life',
@@ -729,7 +736,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Economics',
     topic: 'Microeconomics',
     difficulty: 'Medium',
-    year: 2023,
+    year: 2015,
     question: 'According to the law of demand, other things remaining constant, what is the relationship between the price of a commodity and its quantity demanded?',
     options: [
       'Direct (Positive) relationship',
@@ -753,7 +760,7 @@ export const QUESTIONS: Question[] = [
     subject: 'Economics',
     topic: 'Macroeconomics',
     difficulty: 'Medium',
-    year: 2024,
+    year: 2016,
     question: 'What is the term used to describe a sustained increase in the general price level of goods and services in an economy over a period of time?',
     options: [
       'Deflation',
@@ -773,3 +780,57 @@ export const QUESTIONS: Question[] = [
     time: '20 seconds'
   }
 ];
+
+// Helper: map a raw JSON array to Question[]
+function mapPremiumQuestions(rawList: any[], idOffset: number): Question[] {
+  return rawList.map((q, idx) => {
+    const optionA = q.option_a || '';
+    const optionB = q.option_b || '';
+    const optionC = q.option_c || '';
+    const optionD = q.option_d || '';
+    const correctLetter = (q.correct_answer || '').toUpperCase();
+    const correct =
+      correctLetter === 'A' ? optionA :
+        correctLetter === 'B' ? optionB :
+          correctLetter === 'C' ? optionC : optionD;
+    return {
+      id: idOffset + idx,
+      subject: q.subject || 'General',
+      topic: q.topic || 'General',
+      difficulty: (q.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
+      year: q.year,
+      question: q.question,
+      options: [optionA, optionB, optionC, optionD],
+      correctAnswer: correct,
+      explanation: q.explanation || '',
+      incorrectExplanations: {
+        [optionA]: optionA === correct ? '' : 'Not correct.',
+        [optionB]: optionB === correct ? '' : 'Not correct.',
+        [optionC]: optionC === correct ? '' : 'Not correct.',
+        [optionD]: optionD === correct ? '' : 'Not correct.'
+      },
+      reference: q.reference || '',
+      hint: q.hint || '',
+      time: q.estimated_time ? `${q.estimated_time} seconds` : '30 seconds'
+    } as Question;
+  });
+}
+
+// Premium Math questions: 2014, 2015, 2016 E.C.
+const rawPremiumMath = [
+  ...((math2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
+  ...((math2015 || []) as any[]).map(q => ({ ...q, year: 2015 })),
+  ...((math2016 || []) as any[]).map(q => ({ ...q, year: 2016 }))
+].filter(q => q.subject === 'Mathematics');
+
+const mathPremiumQuestions = mapPremiumQuestions(rawPremiumMath, baseQuestions.length + 1);
+
+// Premium Physics questions: 2014, 2015, 2016 E.C.
+const rawPremiumPhysics = [
+  ...((physics2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
+  ...((physics2015 || []) as any[]).map(q => ({ ...q, year: 2015 })),
+  ...((physics2016 || []) as any[]).map(q => ({ ...q, year: 2016 }))
+];
+const physicsPremiumQuestions = mapPremiumQuestions(rawPremiumPhysics, baseQuestions.length + mathPremiumQuestions.length + 1);
+
+export const QUESTIONS: Question[] = baseQuestions.concat(mathPremiumQuestions, physicsPremiumQuestions);
