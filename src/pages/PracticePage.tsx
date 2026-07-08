@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { isPremiumQuestion, QUESTIONS, SUBJECTS } from '../data/questions';
 import { api } from '../lib/api';
@@ -6,8 +6,14 @@ import { Question } from '../types';
 import {
   ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Lightbulb,
   BookOpen, Search, Filter, RefreshCw, CheckCircle, AlertTriangle,
-  Clock, Share2, Maximize2, Minimize2
+  Clock, Share2, Maximize2, Minimize2, X
 } from 'lucide-react';
+
+type PracticeAnswerState = {
+  selectedOption: string | null;
+  isAnswered: boolean;
+  explanationVisible: boolean;
+};
 
 export const PracticePage: React.FC = () => {
   const {
@@ -37,6 +43,15 @@ export const PracticePage: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [answerStateByQuestionId, setAnswerStateByQuestionId] = useState<Record<number, PracticeAnswerState>>({});
+  const currentQuestionIdRef = useRef<number | null>(null);
+
+  const currentQuestion = filteredQuestions[currentIndex];
+
+  useEffect(() => {
+    currentQuestionIdRef.current = currentQuestion?.id ?? null;
+  }, [currentQuestion?.id]);
 
   // Sync subject filter if selectedSubject from context changes
   useEffect(() => {
@@ -145,29 +160,51 @@ export const PracticePage: React.FC = () => {
       );
     }
 
+    const activeQuestionId = currentQuestionIdRef.current;
     setFilteredQuestions(result);
-    setCurrentIndex(0);
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setShowHint(false);
+    setCurrentIndex((previousIndex) => {
+      if (activeQuestionId !== null) {
+        const preservedIndex = result.findIndex((question) => question.id === activeQuestionId);
+        if (preservedIndex !== -1) {
+          return preservedIndex;
+        }
+      }
+
+      return Math.min(previousIndex, Math.max(result.length - 1, 0));
+    });
+
+    if (result.length === 0) {
+      setSelectedOption(null);
+      setIsAnswered(false);
+      setShowExplanation(false);
+      setShowHint(false);
+    }
   }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds, membershipPlan]);
 
   // Load saved note for the current question
   useEffect(() => {
-    if (filteredQuestions.length > 0) {
-      const activeQ = filteredQuestions[currentIndex];
-      setNoteText(progress.notes[activeQ.id] || '');
-      setSelectedOption(null);
-      
-      setShowHint(false);
-    }
-  }, [currentIndex, filteredQuestions, progress.notes]);
+    if (!currentQuestion) return;
 
-  const currentQuestion = filteredQuestions[currentIndex];
+    const savedAnswerState = answerStateByQuestionId[currentQuestion.id];
+    setNoteText(progress.notes[currentQuestion.id] || '');
+    setSelectedOption(savedAnswerState?.selectedOption ?? null);
+    setIsAnswered(savedAnswerState?.isAnswered ?? false);
+    setShowExplanation(savedAnswerState?.explanationVisible ?? false);
+    setShowHint(false);
+  }, [currentQuestion?.id, progress.notes]);
 
   const handleOptionSelect = (option: string) => {
-    if (isAnswered) return;
+    if (!currentQuestion || isAnswered) return;
+
     setSelectedOption(option);
+    setAnswerStateByQuestionId((previousState) => ({
+      ...previousState,
+      [currentQuestion.id]: {
+        selectedOption: option,
+        isAnswered: false,
+        explanationVisible: false,
+      },
+    }));
   };
 
   const handleSubmit = () => {
@@ -175,6 +212,15 @@ export const PracticePage: React.FC = () => {
 
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
     setIsAnswered(true);
+    setShowExplanation(true);
+    setAnswerStateByQuestionId((previousState) => ({
+      ...previousState,
+      [currentQuestion.id]: {
+        selectedOption,
+        isAnswered: true,
+        explanationVisible: true,
+      },
+    }));
 
     // Call context actions
     answerQuestion(currentQuestion.id, isCorrect);
@@ -185,6 +231,20 @@ export const PracticePage: React.FC = () => {
     } else {
       playIncorrectSound();
     }
+  };
+
+  const handleCloseExplanation = () => {
+    if (!currentQuestion) return;
+
+    setShowExplanation(false);
+    setAnswerStateByQuestionId((previousState) => ({
+      ...previousState,
+      [currentQuestion.id]: {
+        selectedOption,
+        isAnswered,
+        explanationVisible: false,
+      },
+    }));
   };
 
   const handleNext = () => {
@@ -480,7 +540,7 @@ export const PracticePage: React.FC = () => {
             </div>
 
             {/* Step-by-Step Explanation section (renders upon answer checking) */}
-            {isAnswered && (
+            {isAnswered && showExplanation && (
               <div className={`card explanation-card ${selectedOption === currentQuestion.correctAnswer ? '' : 'wrong-border'}`} id="explanation-box">
                 <h3 className="explanation-title">
                   {selectedOption === currentQuestion.correctAnswer ? (
@@ -493,6 +553,14 @@ export const PracticePage: React.FC = () => {
                     </span>
                   )}
                 </h3>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleCloseExplanation}
+                  title="Hide explanation"
+                  style={{ float: 'right', padding: '0.45rem', minWidth: 'auto' }}
+                >
+                  <X size={16} />
+                </button>
 
                 <div className="explanation-body">
                   <p><strong>Correct Option:</strong> {currentQuestion.correctAnswer}</p>

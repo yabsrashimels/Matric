@@ -2,9 +2,9 @@ import { Question, Subject, Badge } from '../types';
 import math2014 from './matric_math_2014EC_practice.json';
 import math2015 from './maths/matric_math_2015EC_practice.json.json';
 import math2016 from './maths/matric_math_2016EC_practice.json.json';
+import physics2009 from './physics/matric_physics_2009Et.json';
+import physics2010 from './physics/matric_physics_2010Et.json';
 import physics2014 from './physics/matric_physics_2014ET.json';
-import physics2015 from './physics/matric_physics_2015Et.json';
-import physics2016 from './physics/matric_physics_2016Et.json';
 import biology2008 from './biology/matric_biology_2008Et.json';
 import biology2009 from './biology/matric_biology_2009Et.json';
 import biology2010 from './biology/matric_biology_2010Et.json';
@@ -826,7 +826,7 @@ export function isPremiumQuestion(question: Pick<Question, 'subject' | 'year'>):
 
   return (
     (subject === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
-    (subject === 'physics' && [2014, 2015, 2016].includes(year)) ||
+    (subject === 'physics' && [2009, 2010, 2014].includes(year)) ||
     (subject === 'biology' && [2008, 2009, 2010].includes(year)) ||
     subject === 'chemistry'
   );
@@ -841,11 +841,11 @@ const rawPremiumMath = [
 
 const mathPremiumQuestions = mapPremiumQuestions(rawPremiumMath, baseQuestions.length + 1);
 
-// Premium Physics questions: 2014, 2015, 2016 E.C.
+// Premium Physics Selection Part questions: 2009, 2010, 2014 E.C.
 const rawPremiumPhysics = [
+  ...((physics2009 || []) as any[]).map(q => ({ ...q, year: 2009 })),
+  ...((physics2010 || []) as any[]).map(q => ({ ...q, year: 2010 })),
   ...((physics2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
-  ...((physics2015 || []) as any[]).map(q => ({ ...q, year: 2015 })),
-  ...((physics2016 || []) as any[]).map(q => ({ ...q, year: 2016 }))
 ];
 const physicsPremiumQuestions = mapPremiumQuestions(rawPremiumPhysics, baseQuestions.length + mathPremiumQuestions.length + 1);
 
