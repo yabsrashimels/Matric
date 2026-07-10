@@ -1,0 +1,17 @@
+[
+  {
+    "subject": "English",
+    "topic": "Grammar - Verb Tenses",
+    "year": 2014,
+    "difficulty": "Easy",
+    "question": "I ___ to school every morning.",
+    "option_a": "go",
+    "option_b": "goes",
+    "option_c": "going",
+    "option_d": "gone",
+    "correct_answer": "A",
+    "explanation": "The present simple tense is used for habitual actions. 'I' takes the base form 'go'.",
+    "reference": "Ethiopian Matric Exam 2014",
+    "hint": "Think about a daily routine.",
+    "estimated_time": 20
+  }]

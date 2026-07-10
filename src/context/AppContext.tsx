@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProgress, StudyPlanTask } from '../types';
+import { UserProgress, StudyPlanTask, Question } from '../types';
 import { QUESTIONS } from '../data/questions';
 import { translations, Language } from '../utils/translations';
 
@@ -40,6 +40,8 @@ interface AppContextType {
   loadPaymentHistory: () => Promise<void>;
   updateUserProfile: (data: any) => Promise<any>;
   apiFetch: (endpoint: string, options?: RequestInit) => Promise<any>;
+  registerQuestions: (questions: Question[]) => void;
+  getKnownQuestions: () => Question[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -85,6 +87,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [membershipPlan, setMembershipPlan] = useState<any | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [language, setLanguageState] = useState<Language>('en');
+  const [questionCache, setQuestionCache] = useState<Record<number, Question>>(() => {
+    const initial: Record<number, Question> = {};
+    for (const q of QUESTIONS) initial[q.id] = q;
+    return initial;
+  });
+
+  const registerQuestions = (questions: Question[]) => {
+    setQuestionCache((prev) => {
+      const next = { ...prev };
+      for (const q of questions) next[q.id] = q;
+      return next;
+    });
+  };
+
+  const getKnownQuestions = (): Question[] => Object.values(questionCache);
 
   // Load state from LocalStorage on mount
   useEffect(() => {
@@ -460,7 +477,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const answerQuestion = (questionId: number, isCorrect: boolean) => {
-    const q = QUESTIONS.find((item) => item.id === questionId);
+    const q = questionCache[questionId];
     if (!q) return;
 
     setProgress((prev) => {
@@ -498,7 +515,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         newlyUnlockedBadges.push('perfect_10');
       }
 
-      const totalSubjectQuestions = QUESTIONS.filter((qi) => qi.subject === subjectName).length;
+      const totalSubjectQuestions = Object.values(questionCache).filter((qi) => qi.subject === subjectName).length;
       if (updatedSubProgress[subjectName].answered >= totalSubjectQuestions && !newlyUnlockedBadges.includes('subject_master')) {
         newlyUnlockedBadges.push('subject_master');
       }
@@ -608,6 +625,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loadPaymentHistory,
         updateUserProfile,
         apiFetch,
+        registerQuestions,
+        getKnownQuestions,
       }}
     >
       {children}

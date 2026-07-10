@@ -1,16 +1,4 @@
 import { Question, Subject, Badge } from '../types';
-import math2014 from './matric_math_2014EC_practice.json';
-import math2015 from './maths/matric_math_2015EC_practice.json.json';
-import math2016 from './maths/matric_math_2016EC_practice.json.json';
-import physics2009 from './physics/matric_physics_2009Et.json';
-import physics2010 from './physics/matric_physics_2010Et.json';
-import physics2014 from './physics/matric_physics_2014ET.json';
-import biology2008 from './biology/matric_biology_2008Et.json';
-import biology2009 from './biology/matric_biology_2009Et.json';
-import biology2010 from './biology/matric_biology_2010Et.json';
-import chemistry2005 from './chemistry/matric_chemistry_2005Et.json';
-import chemistry2014 from './chemistry/matric_chemistry_2014Et.json';
-import chemistry2015 from './chemistry/matric_chemistry_2015Et.json';
 
 export const SUBJECTS: Subject[] = [
   {
@@ -50,7 +38,7 @@ export const SUBJECTS: Subject[] = [
     name: 'English',
     icon: 'BookOpen',
     description: 'English Grammar, Word Order, Vocabulary, Reading Comprehension, Phrasal Verbs.',
-    questionCount: 3,
+    questionCount: 195,
     difficulty: 'Easy'
   },
   {
@@ -66,7 +54,7 @@ export const SUBJECTS: Subject[] = [
     name: 'History',
     icon: 'Milestone',
     description: 'Ethiopian History (Battle of Adwa, Aksum), World Wars, and African Decolonization.',
-    questionCount: 2,
+    questionCount: 211 + 211 + 206 + 186,
     difficulty: 'Medium'
   },
   {
@@ -140,7 +128,7 @@ export const BADGES: Badge[] = [
   }
 ];
 
-// Keep base questions in `baseQuestions` then merge with imported 2014 math items below.
+// Keep base questions in `baseQuestions` — free default questions bundled in the frontend.
 const baseQuestions: Question[] = [
   // MATHEMATICS
   {
@@ -787,39 +775,6 @@ const baseQuestions: Question[] = [
   }
 ];
 
-// Helper: map a raw JSON array to Question[]
-function mapPremiumQuestions(rawList: any[], idOffset: number): Question[] {
-  return rawList.map((q, idx) => {
-    const optionA = q.option_a || '';
-    const optionB = q.option_b || '';
-    const optionC = q.option_c || '';
-    const optionD = q.option_d || '';
-    const options = [optionA, optionB, optionC, optionD].filter(Boolean);
-    const correctLetter = (q.correct_answer || '').toUpperCase();
-    const correct =
-      correctLetter === 'A' ? optionA :
-        correctLetter === 'B' ? optionB :
-          correctLetter === 'C' ? optionC : optionD;
-    return {
-      id: idOffset + idx,
-      subject: q.subject || 'General',
-      topic: q.topic || 'General',
-      difficulty: (q.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
-      year: q.year,
-      question: q.question,
-      options,
-      correctAnswer: correct,
-      explanation: q.explanation || '',
-      incorrectExplanations: Object.fromEntries(
-        options.map(option => [option, option === correct ? '' : 'Not correct.'])
-      ),
-      reference: q.reference || '',
-      hint: q.hint || '',
-      time: q.estimated_time ? `${q.estimated_time} seconds` : '30 seconds'
-    } as Question;
-  });
-}
-
 export function isPremiumQuestion(question: Pick<Question, 'subject' | 'year'>): boolean {
   const subject = question.subject.toLowerCase();
   const year = question.year;
@@ -828,52 +783,13 @@ export function isPremiumQuestion(question: Pick<Question, 'subject' | 'year'>):
     (subject === 'mathematics' && [2014, 2015, 2016].includes(year)) ||
     (subject === 'physics' && [2009, 2010, 2014].includes(year)) ||
     (subject === 'biology' && [2008, 2009, 2010].includes(year)) ||
-    subject === 'chemistry'
+    (subject === 'chemistry' && [2005, 2014, 2015].includes(year)) ||
+    (subject === 'english' && [2005, 2006, 2007, 2014, 2015, 2016].includes(year)) ||
+    (subject === 'history' && [2014, 2015, 2016].includes(year)) ||
+    (subject === 'geography' && [2014, 2015, 2016].includes(year)) ||
+    (subject === 'economics' && [2014, 2015, 2016].includes(year))
   );
 }
 
-// Premium Math questions: 2014, 2015, 2016 E.C.
-const rawPremiumMath = [
-  ...((math2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
-  ...((math2015 || []) as any[]).map(q => ({ ...q, year: 2015 })),
-  ...((math2016 || []) as any[]).map(q => ({ ...q, year: 2016 }))
-].filter(q => q.subject === 'Mathematics');
-
-const mathPremiumQuestions = mapPremiumQuestions(rawPremiumMath, baseQuestions.length + 1);
-
-// Premium Physics Selection Part questions: 2009, 2010, 2014 E.C.
-const rawPremiumPhysics = [
-  ...((physics2009 || []) as any[]).map(q => ({ ...q, year: 2009 })),
-  ...((physics2010 || []) as any[]).map(q => ({ ...q, year: 2010 })),
-  ...((physics2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
-];
-const physicsPremiumQuestions = mapPremiumQuestions(rawPremiumPhysics, baseQuestions.length + mathPremiumQuestions.length + 1);
-
-// Premium Biology questions: 2008, 2009, 2010 E.C.
-const rawPremiumBiology = [
-  ...((biology2008 || []) as any[]).map(q => ({ ...q, year: 2008 })),
-  ...((biology2009 || []) as any[]).map(q => ({ ...q, year: 2009 })),
-  ...((biology2010 || []) as any[]).map(q => ({ ...q, year: 2010 }))
-].filter(q => q.subject === 'Biology');
-const biologyPremiumQuestions = mapPremiumQuestions(
-  rawPremiumBiology,
-  baseQuestions.length + mathPremiumQuestions.length + physicsPremiumQuestions.length + 1
-);
-
-// Premium Chemistry questions: 2005, 2014, 2015 E.C.
-const rawPremiumChemistry = [
-  ...((chemistry2005 || []) as any[]).map(q => ({ ...q, year: 2005 })),
-  ...((chemistry2014 || []) as any[]).map(q => ({ ...q, year: 2014 })),
-  ...((chemistry2015 || []) as any[]).map(q => ({ ...q, year: 2015 }))
-].filter(q => q.subject === 'Chemistry');
-const chemistryPremiumQuestions = mapPremiumQuestions(
-  rawPremiumChemistry,
-  baseQuestions.length + mathPremiumQuestions.length + physicsPremiumQuestions.length + biologyPremiumQuestions.length + 1
-);
-
-export const QUESTIONS: Question[] = baseQuestions.concat(
-  mathPremiumQuestions,
-  physicsPremiumQuestions,
-  biologyPremiumQuestions,
-  chemistryPremiumQuestions
-);
+/** Free default questions bundled in the frontend (no JSON file imports). */
+export const QUESTIONS: Question[] = baseQuestions;

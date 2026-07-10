@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { getMockExams, getMockExamById, createMockExam, startMockExam, submitMockExam } from '../controllers/mockExamController';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
+import { requirePremiumAccess } from '../middleware/payment';
 
 const router = Router();
 
 // GET /api/mock-exams (Get list)
-router.get('/', getMockExams);
+router.get('/', authenticateToken, requirePremiumAccess, getMockExams);
 
 // GET /api/mock-exams/:id (Get details with questions)
-router.get('/:id', getMockExamById);
+router.get('/:id', authenticateToken, requirePremiumAccess, getMockExamById);
 
 // POST /api/mock-exams/start
 router.post('/start', authenticateToken, startMockExam);

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { QUESTIONS } from '../data/questions';
 import { Bookmark, HelpCircle, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const FavoritesPage: React.FC = () => {
-  const { progress, toggleFavorite } = useApp();
+  const { progress, toggleFavorite, getKnownQuestions } = useApp();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  // Filter questions that are inside the favorites array
-  const favoriteQuestions = QUESTIONS.filter(q => progress.favorites.includes(q.id));
+  const favoriteQuestions = getKnownQuestions().filter(q => progress.favorites.includes(q.id));
 
   const handleToggleExpand = (id: number) => {
     setExpandedId(prev => (prev === id ? null : id));

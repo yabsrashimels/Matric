@@ -56,8 +56,70 @@ export const api = {
     return res.json();
   },
 
+  async getDbSubjects() {
+    const res = await fetch(`${API_BASE}/db/subjects`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getCatalogSubject(slug: string) {
+    const res = await fetch(`${API_BASE}/subjects/${encodeURIComponent(slug)}`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getSubjectYearQuestions(slug: string, year: number) {
+    const res = await fetch(`${API_BASE}/subjects/${encodeURIComponent(slug)}/${year}`, {
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Failed to load questions') as Error & { status?: number };
+      error.status = res.status;
+      throw error;
+    }
+    return data;
+  },
+
+  async getSocialSubjects() {
+    const res = await fetch(`${API_BASE}/social`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getSocialSubject(subSubject: string) {
+    const res = await fetch(`${API_BASE}/social/${encodeURIComponent(subSubject)}`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getSocialYearQuestions(subSubject: string, year: number) {
+    const res = await fetch(`${API_BASE}/social/${encodeURIComponent(subSubject)}/${year}`, {
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const error = new Error(data.message || 'Failed to load questions') as Error & { status?: number };
+      error.status = res.status;
+      throw error;
+    }
+    return data;
+  },
+
+  async searchExamQuestions(filters: Record<string, string | number> = {}) {
+    const query = new URLSearchParams(filters as any).toString();
+    const res = await fetch(`${API_BASE}/subjects/search?${query}`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   async createSubject(subject: any) {
-    const res = await fetch(`${API_BASE}/subjects`, {
+    const res = await fetch(`${API_BASE}/db/subjects`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(subject),
@@ -66,7 +128,7 @@ export const api = {
   },
 
   async updateSubject(id: number, subject: any) {
-    const res = await fetch(`${API_BASE}/subjects/${id}`, {
+    const res = await fetch(`${API_BASE}/db/subjects/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(subject),
@@ -75,7 +137,7 @@ export const api = {
   },
 
   async deleteSubject(id: number) {
-    const res = await fetch(`${API_BASE}/subjects/${id}`, {
+    const res = await fetch(`${API_BASE}/db/subjects/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });

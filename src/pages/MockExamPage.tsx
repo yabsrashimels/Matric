@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { isPremiumQuestion, QUESTIONS } from '../data/questions';
+import { isPremiumQuestion } from '../data/questions';
+import { loadQuestionPool } from '../lib/questionPool';
 import { Question } from '../types';
 import { Timer, AlertTriangle, CheckCircle, RefreshCw, Trophy, ArrowRight, ArrowLeft } from 'lucide-react';
 
@@ -11,7 +12,9 @@ interface MockAnswer {
 }
 
 export const MockExamPage: React.FC = () => {
-  const { addXP, playCorrectSound, playIncorrectSound, triggerConfetti, isLocked } = useApp();
+  const { addXP, playCorrectSound, playIncorrectSound, triggerConfetti, isLocked, registerQuestions } = useApp();
+
+  const [examPool, setExamPool] = useState<Question[]>([]);
 
   const [examActive, setExamActive] = useState(false);
   const [examSubmitted, setExamSubmitted] = useState(false);
@@ -24,12 +27,18 @@ export const MockExamPage: React.FC = () => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    loadQuestionPool(!isLocked(2)).then((pool) => {
+      setExamPool(pool);
+      registerQuestions(pool);
+    });
+  }, [isLocked, registerQuestions]);
+
   // Generate random questions for Mock Exam
   const startExam = () => {
-    // Pick 10 random questions from pool
-    let pool = QUESTIONS;
+    let pool = examPool;
     if (isLocked(2)) {
-      pool = QUESTIONS.filter(q => !isPremiumQuestion(q));
+      pool = examPool.filter(q => !isPremiumQuestion(q));
     }
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10);

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { HomePage } from './pages/HomePage';
-import { QUESTIONS } from './data/questions';
+import { getCatalogQuestionCount } from './lib/questionPool';
 import { SubjectsPage } from './pages/SubjectsPage';
 import { PracticePage } from './pages/PracticePage';
 import { MockExamPage } from './pages/MockExamPage';
@@ -16,6 +17,13 @@ import { SignupPage } from './pages/SignupPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { MembershipPage } from './pages/MembershipPage';
+import {
+  SubjectDetailPage,
+  SocialSubjectPage,
+  SubjectYearPracticePage,
+  SocialYearPracticePage,
+} from './pages/SubjectFlowPages';
+import { LockedContent } from './components/exam/LockedContent';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Menu, X, Home, BookOpen, Target, Award, BookOpenCheck,
@@ -24,6 +32,63 @@ import {
   Facebook, Instagram, Linkedin, Github, Send, Mail, Phone, Clock,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
+
+const PAGE_PATHS: Record<string, string> = {
+  home: '/',
+  subjects: '/subjects',
+  practice: '/practice',
+  mock: '/mock-exams',
+  progress: '/progress',
+  favorites: '/favorites',
+  planner: '/planner',
+  membership: '/membership',
+  flashcards: '/flashcards',
+  admin: '/admin',
+  login: '/login',
+  signup: '/signup',
+  profile: '/profile',
+  'forgot-password': '/forgot-password',
+  settings: '/settings',
+};
+
+const PATH_TO_PAGE: Record<string, string> = Object.fromEntries(
+  Object.entries(PAGE_PATHS).map(([page, path]) => [path, page])
+);
+
+const ProtectedPremiumRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLocked, setActivePage } = useApp();
+  const navigate = useNavigate();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isLocked(2)) {
+    return (
+      <LockedContent
+        onPayNow={() => {
+          setActivePage('membership');
+          navigate('/membership');
+        }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+};
+
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useApp();
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useApp();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
 
 const AppContent: React.FC = () => {
   const {
@@ -40,11 +105,19 @@ const AppContent: React.FC = () => {
     t
   } = useApp();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const sidebarNavRef = useRef<HTMLDivElement | null>(null);
   const [indicatorTop, setIndicatorTop] = useState<number>(0);
   const [indicatorVisible, setIndicatorVisible] = useState<boolean>(false);
   const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
+  const [totalQuestionsCount, setTotalQuestionsCount] = useState(0);
+
+  useEffect(() => {
+    getCatalogQuestionCount().then(setTotalQuestionsCount);
+  }, []);
 
   const toggleSidebarCollapse = () => {
     setIsCollapsed(prev => {
@@ -54,7 +127,6 @@ const AppContent: React.FC = () => {
     });
   };
 
-  const totalQuestionsCount = QUESTIONS.length;
   const completedQuestionsCount = progress.completedQuestionIds.length;
   const overallPercent = totalQuestionsCount > 0
     ? Math.round((completedQuestionsCount / totalQuestionsCount) * 100)
@@ -88,42 +160,54 @@ const AppContent: React.FC = () => {
     return items;
   };
 
+  // Sync sidebar state with URL
+  useEffect(() => {
+    const matchedPage = PATH_TO_PAGE[location.pathname];
+    if (matchedPage && matchedPage !== activePage) {
+      setActivePage(matchedPage);
+    }
+  }, [location.pathname]);
+
   // Render active page component
-  const renderPage = () => {
-    // Private page protection: redirect unauthenticated users to Login
-    const privatePages = ['progress', 'favorites', 'planner', 'flashcards', 'profile', 'admin'];
-    if (!user && privatePages.includes(activePage)) {
-      return <LoginPage />;
-    }
-
-    // Authenticated page protection: redirect logged in users away from auth pages
-    const authPages = ['login', 'signup', 'forgot-password'];
-    if (user && authPages.includes(activePage)) {
-      return user.role === 'admin' ? <AdminPage /> : <DashboardPage />;
-    }
-
-    switch (activePage) {
-      case 'home': return <HomePage />;
-      case 'subjects': return <SubjectsPage />;
-      case 'practice': return <PracticePage />;
-      case 'mock': return <MockExamPage />;
-      case 'progress': return <DashboardPage />;
-      case 'favorites': return <FavoritesPage />;
-      case 'planner': return <PlannerPage />;
-      case 'membership': return <MembershipPage />;
-      case 'flashcards': return <FlashcardsPage />;
-      case 'admin': return user?.role === 'admin' ? <AdminPage /> : <HomePage />;
-      case 'login': return <LoginPage />;
-      case 'signup': return <SignupPage />;
-      case 'profile': return <ProfilePage />;
-      case 'forgot-password': return <ForgotPasswordPage />;
-      case 'settings': return <SettingsPage />;
-      default: return <HomePage />;
-    }
-  };
+  const renderRoutes = () => (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/subjects" element={<SubjectsPage />} />
+      <Route path="/subjects/social/:subSubject" element={<SocialSubjectPage />} />
+      <Route path="/subjects/:slug" element={<SubjectDetailPage />} />
+      <Route path="/practice" element={<PracticePage />} />
+      <Route path="/practice/:slug/:year" element={<SubjectYearPracticePage />} />
+      <Route path="/social/:subSubject/:year" element={<SocialYearPracticePage />} />
+      <Route path="/previous-exams" element={<SubjectsPage />} />
+      <Route path="/previous-exams/:slug/:year" element={<SubjectYearPracticePage />} />
+      <Route
+        path="/mock-exams"
+        element={
+          <ProtectedPremiumRoute>
+            <MockExamPage />
+          </ProtectedPremiumRoute>
+        }
+      />
+      <Route path="/mock-exams/:id" element={<ProtectedPremiumRoute><MockExamPage /></ProtectedPremiumRoute>} />
+      <Route path="/membership" element={<MembershipPage />} />
+      <Route path="/progress" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+      <Route path="/favorites" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
+      <Route path="/planner" element={<PrivateRoute><PlannerPage /></PrivateRoute>} />
+      <Route path="/flashcards" element={<PrivateRoute><FlashcardsPage /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+      <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+      <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/progress'} replace /> : <LoginPage />} />
+      <Route path="/signup" element={user ? <Navigate to="/progress" replace /> : <SignupPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="*" element={<HomePage />} />
+    </Routes>
+  );
 
   const handleNavClick = (id: string) => {
     setActivePage(id);
+    const path = PAGE_PATHS[id] || '/';
+    navigate(path);
     setMobileSidebarOpen(false);
   };
 
@@ -367,7 +451,7 @@ const AppContent: React.FC = () => {
               <span className="pulse-dot"></span>
               <span>4,291 students active</span>
             </div>
-            <div className="user-profile-circle" onClick={() => setActivePage(user ? 'profile' : 'login')} style={{ cursor: 'pointer' }}>
+            <div className="user-profile-circle" onClick={() => handleNavClick(user ? 'profile' : 'login')} style={{ cursor: 'pointer' }}>
               {user ? '👤' : '⭐'}
             </div>
           </div>
@@ -375,14 +459,14 @@ const AppContent: React.FC = () => {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={activePage}
+            key={location.pathname}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.2 }}
             id="main-animated-content-wrapper"
           >
-            {renderPage()}
+            {renderRoutes()}
           </motion.div>
         </AnimatePresence>
 

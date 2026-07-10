@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { isPremiumQuestion, QUESTIONS, SUBJECTS } from '../data/questions';
-import { api } from '../lib/api';
+import { isPremiumQuestion, SUBJECTS } from '../data/questions';
+import { loadQuestionPool } from '../lib/questionPool';
 import { Question } from '../types';
 import {
   ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Lightbulb,
@@ -19,10 +19,10 @@ export const PracticePage: React.FC = () => {
   const {
     progress, answerQuestion, toggleFavorite, saveNote,
     playCorrectSound, playIncorrectSound, triggerConfetti,
-    selectedSubject, setSelectedSubject, isLocked, membershipPlan
+    selectedSubject, setSelectedSubject, isLocked, membershipPlan, registerQuestions
   } = useApp();
 
-  const [questionPool, setQuestionPool] = useState<Question[]>(QUESTIONS);
+  const [questionPool, setQuestionPool] = useState<Question[]>([]);
   const [subjectOptions, setSubjectOptions] = useState<string[]>(SUBJECTS.map((subject) => subject.name));
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
 
@@ -64,58 +64,20 @@ export const PracticePage: React.FC = () => {
     const loadQuestions = async () => {
       setIsLoadingQuestions(true);
       try {
-        const response = await api.getQuestions({ limit: 200 });
-        const rows = Array.isArray(response?.data?.questions) ? response.data.questions : [];
-
-        if (rows.length > 0) {
-          const mappedQuestions = rows.map((row: any) => {
-            const options = [row.option_a, row.option_b, row.option_c, row.option_d].filter((value: string | null | undefined) => Boolean(value));
-            const correctLetter = String(row.correct_answer || '').toUpperCase();
-            const answerIndex = ['A', 'B', 'C', 'D'].indexOf(correctLetter);
-            const correctAnswer = answerIndex >= 0 && answerIndex < options.length ? options[answerIndex] : (options[0] || '');
-
-            return {
-              id: Number(row.id),
-              subject: row.subject_name || row.subject || 'General',
-              topic: row.topic_name || row.topic || 'General',
-              difficulty: (row.difficulty || 'Medium') as 'Easy' | 'Medium' | 'Hard',
-              year: Number(row.year || new Date().getFullYear()),
-              question: row.question || 'No question text available',
-              options,
-              correctAnswer,
-              explanation: row.explanation || '',
-              incorrectExplanations: {},
-              reference: row.reference || '',
-              hint: row.hint || '',
-              time: row.estimated_time ? `${row.estimated_time} seconds` : '60 seconds',
-            } as Question;
-          });
-
-          // Combine with bundled static QUESTIONS (e.g. 2014 Math JSON)
-          const dbTexts = new Set(mappedQuestions.map(q => q.question));
-          const uniqueStatic = QUESTIONS.filter(q => !dbTexts.has(q.question)).map(q => ({
-            ...q,
-            id: q.id + 100000 // Offset ID to avoid collision with DB primary keys
-          }));
-
-          const combinedQuestions = [...mappedQuestions, ...uniqueStatic];
-
-          setQuestionPool(combinedQuestions);
-          setSubjectOptions(Array.from(new Set(combinedQuestions.map((question) => question.subject))) as string[]);
-          setIsLoadingQuestions(false);
-          return;
-        }
+        const pool = await loadQuestionPool(!isLocked(2));
+        setQuestionPool(pool);
+        registerQuestions(pool);
+        setSubjectOptions(Array.from(new Set(pool.map((question) => question.subject))) as string[]);
       } catch (error) {
-        console.warn('Unable to load live question bank, using the bundled practice bank.', error);
+        console.warn('Unable to load question bank from API.', error);
+        setSubjectOptions(SUBJECTS.map((subject) => subject.name));
+      } finally {
+        setIsLoadingQuestions(false);
       }
-
-      setQuestionPool(QUESTIONS);
-      setSubjectOptions(SUBJECTS.map((subject) => subject.name));
-      setIsLoadingQuestions(false);
     };
 
     loadQuestions();
-  }, []);
+  }, [isLocked, membershipPlan, registerQuestions]);
 
   // Apply filters
   useEffect(() => {

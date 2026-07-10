@@ -15,6 +15,7 @@ import bookmarkRoutes from './routes/bookmarkRoutes';
 import mockExamRoutes from './routes/mockExamRoutes';
 import adminRoutes from './routes/adminRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import examDataRoutes from './routes/examDataRoutes';
 
 const apiRouter = Router();
 
@@ -39,9 +40,10 @@ apiRouter.get('/health', (req, res) => {
 });
 
 // API Routes Mounting
+apiRouter.use(examDataRoutes);
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/profile', profileRoutes);
-apiRouter.use('/subjects', subjectRoutes);
+apiRouter.use('/db/subjects', subjectRoutes);
 apiRouter.use('/topics', topicRoutes);
 apiRouter.use('/questions', questionRoutes);
 apiRouter.use('/progress', progressRoutes);

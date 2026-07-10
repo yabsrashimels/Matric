@@ -229,7 +229,7 @@ export const AdminPage: React.FC = () => {
 
   const loadSyllabus = async () => {
     try {
-      const subRes = await api.getSubjects();
+      const subRes = await api.getDbSubjects();
       const topRes = await api.getTopics();
       if (subRes.success) setSubjects(subRes.data);
       if (topRes.success) setTopics(topRes.data);

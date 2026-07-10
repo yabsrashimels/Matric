@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { SUBJECTS, QUESTIONS } from '../data/questions';
+import { SUBJECTS } from '../data/questions';
+import { getCatalogQuestionCount } from '../lib/questionPool';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   BookOpen, Target, Shield, Award, Sparkles, Zap, Flame,
@@ -165,9 +166,13 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 
 export const HomePage: React.FC = () => {
   const { progress, setActivePage, setSelectedSubject, language, t } = useApp();
+  const [totalQuestions, setTotalQuestions] = useState(SUBJECTS.length * 10);
+
+  useEffect(() => {
+    getCatalogQuestionCount().then(setTotalQuestions);
+  }, []);
 
   const totalSubjects = SUBJECTS.length;
-  const totalQuestions = QUESTIONS.length;
   const completedQuestions = progress.completedQuestionIds.length;
   const progressPercent = totalQuestions > 0 ? Math.round((completedQuestions / totalQuestions) * 100) : 0;
 
