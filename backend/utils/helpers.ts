@@ -1,9 +1,40 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import db from '../config/db';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_or_default_secret';
+// Resolve the JWT signing secret. Prefer an explicit JWT_SECRET env var (set it in
+// Replit Secrets for production use). If it's not set, fall back to a secret that is
+// generated once and persisted to a git-ignored local file, so tokens stay valid across
+// restarts without ever hardcoding a default secret or committing it to source control.
+const resolveJwtSecret = (): string => {
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  }
+
+  const secretDir = path.join(process.cwd(), 'backend', '.runtime-secrets');
+  const secretPath = path.join(secretDir, 'jwt_secret.key');
+
+  try {
+    if (fs.existsSync(secretPath)) {
+      const existing = fs.readFileSync(secretPath, 'utf8').trim();
+      if (existing) return existing;
+    }
+
+    fs.mkdirSync(secretDir, { recursive: true });
+    const generated = crypto.randomBytes(48).toString('hex');
+    fs.writeFileSync(secretPath, generated, { mode: 0o600 });
+    console.warn('JWT_SECRET env var not set. Generated and persisted a local signing secret at backend/.runtime-secrets/jwt_secret.key. Set JWT_SECRET in Replit Secrets for production use.');
+    return generated;
+  } catch (error: any) {
+    console.error('Failed to persist a generated JWT secret; falling back to an in-memory secret for this process only (tokens will be invalidated on restart).', error.message);
+    return crypto.randomBytes(48).toString('hex');
+  }
+};
+
+const JWT_SECRET = resolveJwtSecret();
 
 export const generateVerificationCode = (): string => {
   return crypto.randomInt(0, 1000000).toString().padStart(6, '0');

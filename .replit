@@ -8,7 +8,8 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-JWT_SECRET = "c7854a8396aec37ca34b74f89eb9d5d4845efefcb70915a683eacecd93e8e66a4894f13dc8688f921fbf98b5f589f2d0"
+GOOGLE_CLIENT_ID = "1038400464911-2sraas6slpvtd41p761bg1lv87lhkdjk.apps.googleusercontent.com"
+VITE_GOOGLE_CLIENT_ID = "1038400464911-2sraas6slpvtd41p761bg1lv87lhkdjk.apps.googleusercontent.com"
 
 [workflows]
 runButton = "Project"
