@@ -318,6 +318,10 @@ function initializeSQLite() {
           console.log('SQLite database is already bootstrapped and populated with users.');
         }
       }
+
+      // Ensure newer auth-verification columns exist even on older SQLite databases
+      // that were bootstrapped before those columns were introduced.
+      await ensureAuthVerificationColumns();
     } catch (error: any) {
       console.error('Failed to initialize SQLite database:', error.message);
       if (error.message.includes('malformed') || error.message.includes('corrupt') || error.message.includes('CORRUPT')) {

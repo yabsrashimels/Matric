@@ -5,6 +5,7 @@ declare global {
                 id?: {
                     initialize: (config: any) => void;
                     prompt: (callback?: (notification: any) => void) => void;
+                    renderButton: (parent: HTMLElement, options: any) => void;
                 };
             };
         };
@@ -59,10 +60,25 @@ export const signInWithGoogle = async (clientId?: string): Promise<string> => {
     }
 
     return new Promise((resolve, reject) => {
+        // Render Google's own button into an offscreen container and click it programmatically.
+        // This drives the standard OAuth popup flow, which works reliably inside sandboxed
+        // preview iframes (e.g. Replit's preview pane) where the One Tap/FedCM prompt API
+        // (`google.accounts.id.prompt`) is blocked by the iframe's permissions policy.
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '-9999px';
+        container.style.left = '-9999px';
+        document.body.appendChild(container);
+
+        const cleanup = () => {
+            container.remove();
+        };
+
         try {
             window.google.accounts.id.initialize({
                 client_id: resolvedClientId,
                 callback: (response: { credential?: string }) => {
+                    cleanup();
                     if (response?.credential) {
                         resolve(response.credential);
                     } else {
@@ -71,14 +87,27 @@ export const signInWithGoogle = async (clientId?: string): Promise<string> => {
                 },
                 auto_select: false,
                 cancel_on_tap_outside: true,
+                use_fedcm_for_prompt: false,
             });
 
-            window.google.accounts.id.prompt((notification: any) => {
-                if (notification?.isNotDisplayed() || notification?.isSkippedMoment()) {
+            window.google.accounts.id.renderButton(container, {
+                type: 'standard',
+                theme: 'outline',
+                size: 'large',
+            });
+
+            // Give the button a tick to render, then click its inner <div role="button">.
+            setTimeout(() => {
+                const clickable = container.querySelector<HTMLElement>('div[role="button"]');
+                if (clickable) {
+                    clickable.click();
+                } else {
+                    cleanup();
                     reject(new Error('Google sign-in could not be shown. Please try again.'));
                 }
-            });
+            }, 50);
         } catch (error: any) {
+            cleanup();
             reject(new Error(error?.message || 'Google sign-in failed.'));
         }
     });
