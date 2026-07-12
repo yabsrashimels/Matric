@@ -160,13 +160,8 @@ const AppContent: React.FC = () => {
     return items;
   };
 
-  // Sync sidebar state with URL
-  useEffect(() => {
-    const matchedPage = PATH_TO_PAGE[location.pathname];
-    if (matchedPage && matchedPage !== activePage) {
-      setActivePage(matchedPage);
-    }
-  }, [location.pathname]);
+  // Derive the active page purely from the URL — no side-effect setState needed
+  const currentPage = PATH_TO_PAGE[location.pathname] || 'home';
 
   // Render active page component
   const renderRoutes = () => (
@@ -205,7 +200,6 @@ const AppContent: React.FC = () => {
   );
 
   const handleNavClick = (id: string) => {
-    setActivePage(id);
     const path = PAGE_PATHS[id] || '/';
     navigate(path);
     setMobileSidebarOpen(false);
@@ -214,12 +208,12 @@ const AppContent: React.FC = () => {
   // Position the animated horizontal active indicator
   useEffect(() => {
     const updateIndicator = () => {
-      const activeEl = document.getElementById(`nav-link-${activePage}`);
+      const activeEl = document.getElementById(`nav-link-${currentPage}`);
       const container = sidebarNavRef.current;
       if (activeEl && container) {
         const containerRect = container.getBoundingClientRect();
         const elRect = activeEl.getBoundingClientRect();
-        const top = elRect.top - containerRect.top + (elRect.height / 2) - 3; // center align (indicator height ~6px)
+        const top = elRect.top - containerRect.top + (elRect.height / 2) - 3;
         setIndicatorTop(top);
         setIndicatorVisible(true);
       } else {
@@ -227,11 +221,10 @@ const AppContent: React.FC = () => {
       }
     };
 
-    // update initially and on resize
     updateIndicator();
     window.addEventListener('resize', updateIndicator);
     return () => window.removeEventListener('resize', updateIndicator);
-  }, [activePage, mobileSidebarOpen]);
+  }, [currentPage, mobileSidebarOpen]);
 
   // Generate confetti pieces
   const renderConfetti = () => {
@@ -364,7 +357,7 @@ const AppContent: React.FC = () => {
           {getNavItems().map((item) => (
             <button
               key={item.id}
-              className={`nav-link ${activePage === item.id ? 'active' : ''}`}
+              className={`nav-link ${currentPage === item.id ? 'active' : ''}`}
               onClick={() => handleNavClick(item.id)}
               id={`nav-link-${item.id}`}
             >
@@ -379,6 +372,7 @@ const AppContent: React.FC = () => {
               className="nav-link logout-nav-link"
               onClick={() => {
                 logout();
+                navigate('/login');
                 setMobileSidebarOpen(false);
               }}
               id="nav-link-logout"

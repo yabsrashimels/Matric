@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 export const SignupPage: React.FC = () => {
-  const { signup, setActivePage, t } = useApp();
+  const { signup, t } = useApp();
+  const navigate = useNavigate();
   
   // Registration States
   const [fullName, setFullName] = useState('');
@@ -74,7 +76,7 @@ export const SignupPage: React.FC = () => {
       if (isSuccessful) {
         setSuccess('Account created successfully. You will be redirected to the login page shortly.');
         setTimeout(() => {
-          setActivePage('login');
+          navigate('/login');
         }, 2000);
       } else {
         setError(data?.message || 'We could not create your account. Please review your details and try again.');
@@ -224,7 +226,7 @@ export const SignupPage: React.FC = () => {
           <p>
             {t('alreadyHaveAccount')}{' '}
             <button
-              onClick={() => setActivePage('login')}
+              onClick={() => navigate('/login')}
               className="auth-toggle-link"
               id="goto-login-btn"
             >

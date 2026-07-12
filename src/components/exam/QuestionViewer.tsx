@@ -53,7 +53,9 @@ export const QuestionViewer: React.FC<QuestionViewerProps> = ({
     if (questions.length > 0) {
       registerQuestions(questions);
     }
-  }, [questions, registerQuestions]);
+  // registerQuestions is stable (useCallback), questions reference changes only when content changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions]);
 
   useEffect(() => {
     setSelectedOption(null);

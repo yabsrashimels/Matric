@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 export const LoginPage: React.FC = () => {
-  const { login, setActivePage, t } = useApp();
+  const { login, t } = useApp();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +23,9 @@ export const LoginPage: React.FC = () => {
       const data = await login(email, password);
       if (data.success) {
         if (data.data.user.role === 'admin') {
-          setActivePage('admin');
+          navigate('/admin');
         } else {
-          setActivePage('progress');
+          navigate('/progress');
         }
       }
     } catch (err: any) {
@@ -68,7 +70,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 className="forgot-password-link"
-                onClick={() => setActivePage('forgot-password')}
+                onClick={() => navigate('/forgot-password')}
                 id="forgot-password-trigger"
               >
                 {t('forgotPassword')}
@@ -90,7 +92,11 @@ export const LoginPage: React.FC = () => {
             disabled={loading}
             id="login-submit-btn"
           >
-            {loading ? t('submitting') : t('login')}
+            {loading ? (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <span className="spinner-inline" /> {t('submitting')}
+              </span>
+            ) : t('login')}
           </button>
         </form>
 
@@ -98,7 +104,7 @@ export const LoginPage: React.FC = () => {
           <p>
             {t('dontHaveAccount')}{' '}
             <button
-              onClick={() => setActivePage('signup')}
+              onClick={() => navigate('/signup')}
               className="auth-toggle-link"
               id="goto-signup-btn"
             >

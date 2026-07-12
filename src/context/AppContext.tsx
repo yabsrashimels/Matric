@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { UserProgress, StudyPlanTask, Question } from '../types';
 import { QUESTIONS } from '../data/questions';
 import { translations, Language } from '../utils/translations';
@@ -93,15 +93,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return initial;
   });
 
-  const registerQuestions = (questions: Question[]) => {
+  const registerQuestions = useCallback((questions: Question[]) => {
     setQuestionCache((prev) => {
       const next = { ...prev };
-      for (const q of questions) next[q.id] = q;
-      return next;
+      let changed = false;
+      for (const q of questions) {
+        if (!prev[q.id]) { next[q.id] = q; changed = true; }
+      }
+      return changed ? next : prev;
     });
-  };
+  }, []);
 
-  const getKnownQuestions = (): Question[] => Object.values(questionCache);
+  const getKnownQuestions = useCallback((): Question[] => Object.values(questionCache), [questionCache]);
 
   // Load state from LocalStorage on mount
   useEffect(() => {
@@ -193,7 +196,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       setMembershipPlan(null);
     }
-  }, [token, user]);
+  }, [token]);
 
   const loadMembership = async () => {
     try {
@@ -248,7 +251,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Safe Translate dictionary function
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const dict = translations[language] as any;
     if (dict && dict[key]) {
       return dict[key];
@@ -259,7 +262,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return engDict[key];
     }
     return key;
-  };
+  }, [language]);
 
   // Authenticate user login
   const login = async (email: string, password: string): Promise<any> => {
@@ -350,7 +353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem('ethio_user');
     localStorage.removeItem('ethio_role');
     localStorage.removeItem('ethio_user_name');
-    setActivePage('login');
+    // Note: Navigation after logout is handled by the caller using React Router's navigate()
   };
 
   // Update profile
@@ -374,14 +377,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Access control checker: Checks if a subject/topic of specific tier is locked for current user
-  const isLocked = (requiredPlanId?: number): boolean => {
+  const isLocked = useCallback((requiredPlanId?: number): boolean => {
     if (!requiredPlanId || requiredPlanId === 1) return false; // Free content is never locked
     if (user?.role === 'admin') return false; // Admin has complete access
 
     // Fetch active level (1 = Free, 2 = Premium, 3 = Advanced)
     const currentPlanId = membershipPlan?.plan_id || 1;
     return currentPlanId < requiredPlanId;
-  };
+  }, [user?.role, membershipPlan?.plan_id]);
 
   // Student manual payment submission
   const submitPayment = async (planId: number, method: string, ref: string, screenshotUrl?: string): Promise<any> => {
@@ -582,7 +585,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProgress(INITIAL_PROGRESS);
       localStorage.removeItem('ethio_progress');
       alert('Progress has been reset.');
-      setActivePage('home');
     }
   };
 

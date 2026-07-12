@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { SUBJECTS } from '../data/questions';
 import { getCatalogQuestionCount } from '../lib/questionPool';
@@ -165,7 +166,8 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 };
 
 export const HomePage: React.FC = () => {
-  const { progress, setActivePage, setSelectedSubject, language, t } = useApp();
+  const { progress, setSelectedSubject, language, t } = useApp();
+  const navigate = useNavigate();
   const [totalQuestions, setTotalQuestions] = useState(SUBJECTS.length * 10);
 
   useEffect(() => {
@@ -178,12 +180,12 @@ export const HomePage: React.FC = () => {
 
   const startPracticing = () => {
     setSelectedSubject(null);
-    setActivePage('practice');
+    navigate('/practice');
   };
 
   const startSubject = (subjectName: string) => {
     setSelectedSubject(subjectName);
-    setActivePage('practice');
+    navigate('/practice');
   };
 
   // Scroll animations variants

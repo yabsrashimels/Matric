@@ -196,7 +196,9 @@ export const SubjectYearPracticePage: React.FC = () => {
     };
 
     load();
-  }, [slug, year, user, navigate, setActivePage]);
+  // Only re-run when the URL params change, not on navigate/setActivePage function identity changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, year, user?.id]);
 
   if (!user) return null;
 
@@ -278,7 +280,9 @@ export const SocialYearPracticePage: React.FC = () => {
     };
 
     load();
-  }, [subSubject, year, user, navigate, setActivePage]);
+  // Only re-run when the URL params change, not on navigate/setActivePage function identity changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subSubject, year, user?.id]);
 
   if (!user) return null;
 

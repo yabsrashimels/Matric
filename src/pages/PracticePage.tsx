@@ -77,7 +77,9 @@ export const PracticePage: React.FC = () => {
     };
 
     loadQuestions();
-  }, [isLocked, membershipPlan, registerQuestions]);
+  // Only re-run when membership plan changes (primitive id), not on unstable function refs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [membershipPlan?.plan_id]);
 
   // Apply filters
   useEffect(() => {
@@ -141,19 +143,22 @@ export const PracticePage: React.FC = () => {
       setShowExplanation(false);
       setShowHint(false);
     }
-  }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds, membershipPlan]);
+  }, [questionPool, subjectFilter, difficultyFilter, yearFilter, statusFilter, searchQuery, progress.completedQuestionIds]);
 
-  // Load saved note for the current question
+  // Load saved note and answer state for the current question
   useEffect(() => {
     if (!currentQuestion) return;
 
     const savedAnswerState = answerStateByQuestionId[currentQuestion.id];
-    setNoteText(progress.notes[currentQuestion.id] || '');
+    const savedNote = progress.notes[currentQuestion.id] || '';
+    setNoteText(savedNote);
     setSelectedOption(savedAnswerState?.selectedOption ?? null);
     setIsAnswered(savedAnswerState?.isAnswered ?? false);
     setShowExplanation(savedAnswerState?.explanationVisible ?? false);
     setShowHint(false);
-  }, [currentQuestion?.id, progress.notes]);
+  // Only re-run when question id changes - answerStateByQuestionId and progress.notes refs change too often
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id]);
 
   const handleOptionSelect = (option: string) => {
     if (!currentQuestion || isAnswered) return;

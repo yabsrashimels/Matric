@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 export const ForgotPasswordPage: React.FC = () => {
-  const { setActivePage, t } = useApp();
+  const { t } = useApp();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ export const ForgotPasswordPage: React.FC = () => {
               If you do not see the email shortly, please check your spam folder or try again with the correct address.
             </p>
             <button
-              onClick={() => setActivePage('login')}
+              onClick={() => navigate('/login')}
               className="auth-submit-btn"
               style={{ marginTop: '1.5rem' }}
             >
@@ -70,7 +72,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setActivePage('login')}
+              onClick={() => navigate('/login')}
               className="back-to-login-btn"
               style={{ display: 'block', margin: '1rem auto 0 auto', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}
             >
