@@ -482,21 +482,66 @@ body {
 /* Mobile Header */
 .mobile-header {
   display: none;
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
+  gap: 0.75rem;
+  position: fixed;
   top: 0;
-  z-index: 99;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  height: 64px;
+  padding: 0.75rem 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="dark"] .mobile-header {
+  background: rgba(11, 15, 25, 0.92);
+}
+
+.mobile-header .brand-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.mobile-header .brand-name {
+  display: none;
+}
+
+.mobile-header .brand-logo {
+  width: 34px;
+  height: 34px;
+}
+
+.mobile-header .brand-logo-inner {
+  width: 18px;
+  height: 18px;
 }
 
 .menu-btn {
-  background: none;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   cursor: pointer;
   color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  flex-shrink: 0;
+}
+
+.menu-btn:hover {
+  background: var(--hover-bg);
 }
 
 /* Common UI Elements */
@@ -1691,7 +1736,7 @@ input:checked+.slider:before {
 
   .main-content {
     margin-left: 0;
-    padding: 1rem;
+    padding: 5.25rem 0.9rem 1rem 0.9rem;
   }
 
   .main-header-bar {
@@ -1700,6 +1745,10 @@ input:checked+.slider:before {
 
   .mobile-header {
     display: flex;
+  }
+
+  .main-content>*:first-child {
+    margin-top: 0;
   }
 
   .progress-toast-footer {
