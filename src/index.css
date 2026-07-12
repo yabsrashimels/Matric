@@ -61,6 +61,24 @@
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
+  cursor: default;
+}
+
+input,
+textarea,
+select,
+button,
+a,
+label {
+  cursor: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body,
@@ -82,11 +100,21 @@ h4,
 h5,
 h6,
 span,
+button {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
 input,
 select,
 textarea,
-button {
-  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+[contenteditable="true"],
+[contenteditable=""],
+[role="textbox"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  cursor: text;
 }
 
 body {
@@ -2734,7 +2762,15 @@ input:checked+.slider:before {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   border-radius: 10px;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.payments-tab-header,
+.admin-card-header-flex>div:first-child {
+  min-width: 0;
 }
 
 .payment-history-table {
@@ -3076,6 +3112,9 @@ input:checked+.slider:before {
   padding: 1.75rem;
   border-radius: 14px;
   box-shadow: 0 4px 6px -1px var(--shadow-color);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .admin-inner-card h4 {
@@ -3132,18 +3171,27 @@ input:checked+.slider:before {
 
 /* Headers and actions in cards */
 .admin-card-header-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  align-items: start;
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.admin-card-header-flex>div:first-child {
+  min-width: 0;
 }
 
 .admin-card-header-flex h4 {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-primary);
+}
+
+.search-box-wrapper {
+  width: 100%;
+  max-width: 320px;
+  min-width: 0;
 }
 
 .search-box-wrapper input {
@@ -3156,6 +3204,7 @@ input:checked+.slider:before {
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  min-width: 0;
 }
 
 .search-box-wrapper input:focus {
@@ -3168,12 +3217,15 @@ input:checked+.slider:before {
 /* Custom Table Design */
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
+  table-layout: fixed;
 }
 
 .admin-table th {
-  padding: 0.9rem 1.15rem;
+  padding: 0.9rem 0.95rem;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -3181,15 +3233,21 @@ input:checked+.slider:before {
   border-bottom: 2px solid var(--border-color);
   background-color: var(--bg-primary);
   letter-spacing: 0.5px;
+  white-space: normal;
+  line-height: 1.45;
 }
 
 .admin-table td {
-  padding: 1.1rem 1.15rem;
+  padding: 1rem 0.95rem;
   font-size: 0.875rem;
   color: var(--text-primary);
   border-bottom: 1px solid var(--border-color);
   font-weight: 500;
   vertical-align: middle;
+  white-space: normal;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-table tr:hover td {
@@ -3199,7 +3257,10 @@ input:checked+.slider:before {
 /* Table Actions & Buttons */
 .table-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  row-gap: 0.45rem;
+  align-items: center;
 }
 
 .action-btn-small {
@@ -3216,6 +3277,8 @@ input:checked+.slider:before {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: all 0.2s ease;
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .action-btn-small:hover {
@@ -4679,6 +4742,33 @@ input:checked+.slider:before {
 @media (max-width: 992px) {
   .sidebar-collapse-toggle-btn {
     display: none !important;
+  }
+
+  .admin-card-header-flex {
+    grid-template-columns: 1fr;
+  }
+
+  .search-box-wrapper {
+    max-width: 100%;
+  }
+
+  .admin-inner-card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-table {
+    min-width: 860px;
+  }
+
+  .table-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-btn-small {
+    width: 100%;
   }
 }
 
