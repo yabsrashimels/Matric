@@ -1,0 +1,27 @@
+import React from 'react';
+
+interface GoogleSignInButtonProps {
+    onClick: () => void;
+    loading?: boolean;
+    label?: string;
+}
+
+export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onClick, loading = false, label = 'Continue with Google' }) => {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={loading}
+            className="social-auth-btn"
+            style={{ marginTop: '0.75rem' }}
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: '18px', height: '18px' }}>
+                <path fill="#4285F4" d="M21.6 12.23c0-.82-.07-1.6-.2-2.35H12v4.45h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.62Z" />
+                <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.24-2.5c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.58A10 10 0 0 0 12 22Z" />
+                <path fill="#FBBC05" d="M6.41 13.91A6.02 6.02 0 0 1 6.41 10.1V7.52H3.07a10 10 0 0 0 0 12.78l3.34-2.58Z" />
+                <path fill="#EA4335" d="M12 6.04c1.47 0 2.79.5 3.83 1.49l2.87-2.87A9.95 9.95 0 0 0 12 2a10 10 0 0 0-8.93 5.52l3.34 2.58C7.2 7.8 9.4 6.04 12 6.04Z" />
+            </svg>
+            <span>{loading ? 'Please wait…' : label}</span>
+        </button>
+    );
+};

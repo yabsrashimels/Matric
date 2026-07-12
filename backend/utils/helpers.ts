@@ -1,8 +1,19 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import db from '../config/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_or_default_secret';
+
+export const generateVerificationCode = (): string => {
+  return crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+};
+
+export const isVerificationExpired = (expiresAt?: Date | string | null): boolean => {
+  if (!expiresAt) return true;
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+  return Number.isNaN(expiry.getTime()) || expiry.getTime() <= Date.now();
+};
 
 // Password Hashing
 export const hashPassword = async (password: string): Promise<string> => {

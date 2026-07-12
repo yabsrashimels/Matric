@@ -32,6 +32,7 @@ interface AppContextType {
   t: (key: string) => string;
   login: (email: string, password: string) => Promise<any>;
   signup: (signupData: any) => Promise<any>;
+  setAuthSession: (authData: { token: string; user: any } | null) => void;
   logout: () => void;
   isLocked: (requiredPlanId?: number) => boolean;
   membershipPlan: any | null;
@@ -264,6 +265,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return key;
   }, [language]);
 
+  const setAuthSession = useCallback((authData: { token: string; user: any } | null) => {
+    if (!authData) {
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('ethio_token');
+      localStorage.removeItem('ethio_user');
+      localStorage.removeItem('ethio_role');
+      localStorage.removeItem('ethio_user_name');
+      return;
+    }
+
+    const { token: authToken, user: authUser } = authData;
+    const safeUser = authUser && typeof authUser === 'object' ? authUser : null;
+
+    setToken(authToken || null);
+    setUser(safeUser);
+
+    if (authToken) {
+      localStorage.setItem('ethio_token', authToken);
+    } else {
+      localStorage.removeItem('ethio_token');
+    }
+
+    if (safeUser) {
+      localStorage.setItem('ethio_user', JSON.stringify(safeUser));
+      if (safeUser.role) localStorage.setItem('ethio_role', safeUser.role);
+      localStorage.setItem('ethio_user_name', `${safeUser.first_name || ''} ${safeUser.last_name || ''}`.trim());
+    } else {
+      localStorage.removeItem('ethio_user');
+      localStorage.removeItem('ethio_role');
+      localStorage.removeItem('ethio_user_name');
+    }
+  }, []);
+
   // Authenticate user login
   const login = async (email: string, password: string): Promise<any> => {
     try {
@@ -273,25 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       if (data.success && data.data) {
         const { token: userToken, user: userData } = data.data;
-        const safeUser = userData && typeof userData === 'object' ? userData : null;
-
-        setToken(userToken || null);
-        setUser(safeUser);
-        if (userToken) {
-          localStorage.setItem('ethio_token', userToken);
-        } else {
-          localStorage.removeItem('ethio_token');
-        }
-
-        if (safeUser) {
-          localStorage.setItem('ethio_user', JSON.stringify(safeUser));
-          if (safeUser.role) localStorage.setItem('ethio_role', safeUser.role);
-          localStorage.setItem('ethio_user_name', `${safeUser.first_name || ''} ${safeUser.last_name || ''}`.trim());
-        } else {
-          localStorage.removeItem('ethio_user');
-          localStorage.removeItem('ethio_role');
-          localStorage.removeItem('ethio_user_name');
-        }
+        setAuthSession({ token: userToken || '', user: userData || null });
         return data;
       }
       throw new Error(data.message || 'Login failed');
@@ -318,23 +335,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }),
       });
 
-      // Auto-login on successful signup if backend returns token/user
       if (data?.success && data?.data) {
         const { token: userToken, user: userData } = data.data;
-        const safeUser = userData && typeof userData === 'object' ? userData : null;
-
-        if (!safeUser || !userToken) {
-          throw new Error('Registration succeeded but the server did not return a valid session.');
-        }
-
-        setToken(userToken || null);
-        setUser(safeUser);
-
-        if (userToken) localStorage.setItem('ethio_token', userToken);
-        if (safeUser) {
-          localStorage.setItem('ethio_user', JSON.stringify(safeUser));
-          if (safeUser.role) localStorage.setItem('ethio_role', safeUser.role);
-          localStorage.setItem('ethio_user_name', `${safeUser.first_name || ''} ${safeUser.last_name || ''}`.trim());
+        if (userToken) {
+          setAuthSession({ token: userToken, user: userData || null });
         }
       }
 
@@ -346,13 +350,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
+    setAuthSession(null);
     setMembershipPlan(null);
-    localStorage.removeItem('ethio_token');
-    localStorage.removeItem('ethio_user');
-    localStorage.removeItem('ethio_role');
-    localStorage.removeItem('ethio_user_name');
     // Note: Navigation after logout is handled by the caller using React Router's navigate()
   };
 
@@ -619,6 +618,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         t,
         login,
         signup,
+        setAuthSession,
         logout,
         isLocked,
         membershipPlan,

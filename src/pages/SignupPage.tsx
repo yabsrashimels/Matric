@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
+import { signInWithGoogle } from '../lib/googleAuth';
 
 export const SignupPage: React.FC = () => {
-  const { signup, t } = useApp();
+  const { signup, t, setAuthSession } = useApp();
   const navigate = useNavigate();
-  
+
   // Registration States
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,15 +17,40 @@ export const SignupPage: React.FC = () => {
   const [region, setRegion] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Simple international format checker e.g., +251912345678
   const validatePhone = (num: string): boolean => {
     const phoneRegex = /^\+\d{10,14}$/;
     return phoneRegex.test(num);
+  };
+
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const credential = await signInWithGoogle();
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Google sign-in failed');
+      if (data.success && data.data) {
+        setAuthSession({ token: data.data.token, user: data.data.user });
+        navigate('/progress');
+      }
+    } catch (err: any) {
+      setError(err.message || 'We could not sign you in with Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,10 +101,10 @@ export const SignupPage: React.FC = () => {
       const isSuccessful = data?.success === true || Boolean(payload?.token || payload?.user);
 
       if (isSuccessful) {
-        setSuccess('Account created successfully. You will be redirected to the login page shortly.');
+        setSuccess('Account created successfully. Please check your email for the verification code.');
         setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+          navigate('/verify-email', { state: { email } });
+        }, 1200);
       } else {
         setError(data?.message || 'We could not create your account. Please review your details and try again.');
       }
@@ -221,6 +248,12 @@ export const SignupPage: React.FC = () => {
             {loading ? t('submitting') : t('signup')}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+
+        <GoogleSignInButton onClick={handleGoogleSignUp} loading={googleLoading} />
 
         <div className="auth-footer">
           <p>

@@ -23,6 +23,13 @@ CREATE TABLE IF NOT EXISTS users (
   role VARCHAR(50) DEFAULT 'student', -- 'student', 'admin'
   phone_number VARCHAR(50),
   profile_picture TEXT,
+  google_id VARCHAR(255) UNIQUE,
+  auth_provider VARCHAR(50) DEFAULT 'local',
+  email_verified BOOLEAN DEFAULT TRUE,
+  verification_code VARCHAR(10),
+  verification_code_expires_at TIMESTAMP,
+  verification_attempts INTEGER DEFAULT 0,
+  verification_last_sent_at TIMESTAMP,
   status VARCHAR(20) DEFAULT 'active', -- 'active', 'suspended'
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -185,6 +192,7 @@ CREATE TABLE IF NOT EXISTS language_preferences (
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject_id);
 CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic_id);
 CREATE INDEX IF NOT EXISTS idx_user_answers_user ON user_answers(user_id);

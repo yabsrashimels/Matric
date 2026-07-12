@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
 const toEthiopianYear = (year: number) => `${year} E.C.`;
@@ -8,45 +8,46 @@ export const Premium2014Panel: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
 
-  const fetchPremium = async () => {
-    setError(null);
-    setLoading(true);
+  useEffect(() => {
+    const fetchPremium = async () => {
+      setError(null);
+      setLoading(true);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('ethio_token') : null;
-    if (!token) {
-      setError('Please sign in first. Use the seeded Premium account: student@matricprep.com / password123');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await api.getPremiumQuestionsByYear(2014);
-      const data = Array.isArray(res?.data) ? res.data : [];
-      setQuestions(data);
-
-      if (data.length === 0) {
-        setError('The premium request succeeded, but no questions were returned for that year.');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('ethio_token') : null;
+      if (!token) {
+        setError('Please sign in first. Use the seeded Premium account: student@matricprep.com / password123');
+        setLoading(false);
+        return;
       }
-    } catch (err: any) {
-      const msg = err?.message || 'Failed to fetch premium questions';
-      if (msg.includes('402') || msg.includes('Payment required')) {
-        setError('Your account is not marked as paid yet. Sign in with the seeded Premium account or complete a 100 ETB payment first.');
-      } else if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Access denied')) {
-        setError('Please sign in first. The Premium account is student@matricprep.com / password123.');
-      } else {
-        setError(msg);
+
+      try {
+        const res = await api.getPremiumQuestionsByYear(2014);
+        const data = Array.isArray(res?.data) ? res.data : [];
+        setQuestions(data);
+
+        if (data.length === 0) {
+          setError('The premium request succeeded, but no questions were returned for that year.');
+        }
+      } catch (err: any) {
+        const msg = err?.message || 'Failed to fetch premium questions';
+        if (msg.includes('402') || msg.includes('Payment required')) {
+          setError('Your account is not marked as paid yet. Sign in with the seeded Premium account or complete a 100 ETB payment first.');
+        } else if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Access denied')) {
+          setError('Please sign in first. The Premium account is student@matricprep.com / password123.');
+        } else {
+          setError(msg);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchPremium();
+  }, []);
 
   return (
     <div style={{ marginTop: '1rem' }}>
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <button className="btn-primary" onClick={fetchPremium} disabled={loading}>
-          {loading ? 'Loading...' : 'Load 2014 E.C. Premium Math Q&A'}
-        </button>
         <small style={{ color: 'var(--text-secondary)' }}>Premium access requires a 100 ETB paid account.</small>
       </div>
 

@@ -17,6 +17,7 @@ import { SignupPage } from './pages/SignupPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { MembershipPage } from './pages/MembershipPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import {
   SubjectDetailPage,
   SocialSubjectPage,
@@ -194,6 +195,7 @@ const AppContent: React.FC = () => {
       <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
       <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/progress'} replace /> : <LoginPage />} />
       <Route path="/signup" element={user ? <Navigate to="/progress" replace /> : <SignupPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="*" element={<HomePage />} />
@@ -202,8 +204,9 @@ const AppContent: React.FC = () => {
 
   const handleNavClick = (id: string) => {
     const path = PAGE_PATHS[id] || '/';
-    navigate(path);
     setMobileSidebarOpen(false);
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    navigate(path);
   };
 
   // Position the animated horizontal active indicator
@@ -226,6 +229,10 @@ const AppContent: React.FC = () => {
     window.addEventListener('resize', updateIndicator);
     return () => window.removeEventListener('resize', updateIndicator);
   }, [currentPage, mobileSidebarOpen]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [location.pathname]);
 
   // Generate confetti pieces
   const renderConfetti = () => {

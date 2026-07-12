@@ -16,6 +16,41 @@ let dbPool: DbPool;
 
 const usePostgres = !!process.env.DB_HOST && !!process.env.DB_NAME;
 
+const ensureAuthVerificationColumns = async () => {
+  try {
+    if (!dbPool) return;
+
+    const columnRows = dbPool.isSQLite
+      ? (await dbPool.query('PRAGMA table_info(users)')).rows
+      : (await dbPool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND table_schema = 'public'")).rows;
+
+    const existingColumns = new Set((columnRows || []).map((row: any) => String(row.column_name || row.name || '').toLowerCase()));
+
+    const statements: string[] = [];
+    if (!existingColumns.has('email_verified')) {
+      statements.push("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT TRUE");
+    }
+    if (!existingColumns.has('verification_code')) {
+      statements.push('ALTER TABLE users ADD COLUMN verification_code VARCHAR(10)');
+    }
+    if (!existingColumns.has('verification_code_expires_at')) {
+      statements.push('ALTER TABLE users ADD COLUMN verification_code_expires_at TIMESTAMP');
+    }
+    if (!existingColumns.has('verification_attempts')) {
+      statements.push('ALTER TABLE users ADD COLUMN verification_attempts INTEGER DEFAULT 0');
+    }
+    if (!existingColumns.has('verification_last_sent_at')) {
+      statements.push('ALTER TABLE users ADD COLUMN verification_last_sent_at TIMESTAMP');
+    }
+
+    for (const statement of statements) {
+      await dbPool.query(statement);
+    }
+  } catch (error: any) {
+    console.warn('Could not ensure auth verification columns:', error.message);
+  }
+};
+
 if (usePostgres) {
   console.log('Database Config: Attempting to connect to PostgreSQL at', process.env.DB_HOST);
   const pool = new pg.Pool({
@@ -47,6 +82,8 @@ if (usePostgres) {
         },
         isSQLite: false,
       };
+
+      void ensureAuthVerificationColumns();
 
       // Ensure profile_picture column exists on PG
       pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT;').catch(e => {
@@ -287,7 +324,7 @@ function initializeSQLite() {
         console.error('SQLite database image is malformed or corrupt. Deleting the database and retrying...');
         try {
           sqliteDb.close();
-        } catch (closeErr) {}
+        } catch (closeErr) { }
         if (fs.existsSync(dbPath)) {
           try {
             fs.unlinkSync(dbPath);

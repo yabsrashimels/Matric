@@ -1,14 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
+import { signInWithGoogle } from '../lib/googleAuth';
 
 export const LoginPage: React.FC = () => {
-  const { login, t } = useApp();
+  const { login, t, setAuthSession } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      const credential = await signInWithGoogle();
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Google sign-in failed');
+      if (data.success && data.data) {
+        setAuthSession({ token: data.data.token, user: data.data.user });
+        navigate('/progress');
+      }
+    } catch (err: any) {
+      setError(err.message || 'We could not sign you in with Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +125,12 @@ export const LoginPage: React.FC = () => {
             ) : t('login')}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+
+        <GoogleSignInButton onClick={handleGoogleSignIn} loading={googleLoading} />
 
         <div className="auth-footer">
           <p>
