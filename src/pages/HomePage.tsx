@@ -231,7 +231,7 @@ export const HomePage: React.FC = () => {
           <div className="hero-actions">
             <button
               className="btn btn-primary btn-glow"
-              onClick={() => setActivePage('subjects')}
+              onClick={() => navigate('/subjects')}
               aria-label="Start learning — go to Subjects page"
               id="hero-start-learning-btn"
             >
@@ -331,7 +331,7 @@ export const HomePage: React.FC = () => {
             </h2>
             <p className="section-desc">Get started instantly with targeted, curriculum-synced modules</p>
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={() => setActivePage('subjects')}>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/subjects')}>
             Explore All Subjects
           </button>
         </div>
@@ -686,7 +686,7 @@ export const HomePage: React.FC = () => {
           <div className="cta-actions">
             <button
               className="btn btn-warning btn-glow"
-              onClick={() => setActivePage('signup')}
+              onClick={() => navigate('/signup')}
               aria-label="Sign up for free account"
               id="cta-signup-btn"
             >
@@ -694,7 +694,7 @@ export const HomePage: React.FC = () => {
             </button>
             <button
               className="btn btn-secondary text-white border-white bg-transparent"
-              onClick={() => setActivePage('subjects')}
+              onClick={() => navigate('/subjects')}
               aria-label="Browse all curriculum subjects"
               id="cta-browse-btn"
             >

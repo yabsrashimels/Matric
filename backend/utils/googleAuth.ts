@@ -78,7 +78,7 @@ export const verifyGoogleCredential = async (
             throw new GoogleAuthError('Google account email is missing from the verified token.');
         }
 
-        if (payload.email_verified !== true && payload.email_verified !== 'true') {
+        if (payload.email_verified !== true) {
             throw new GoogleAuthError('Your Google email address must be verified before signing in.');
         }
 
@@ -86,7 +86,7 @@ export const verifyGoogleCredential = async (
             throw new GoogleAuthError('Google account identifier is missing from the verified token.');
         }
 
-        const profile = extractGoogleProfile(payload as Record<string, unknown>);
+        const profile = extractGoogleProfile(payload as unknown as Record<string, unknown>);
         if (!profile.google_id || !profile.email) {
             throw new GoogleAuthError('Google sign-in could not be verified.');
         }

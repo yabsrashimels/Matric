@@ -6,7 +6,7 @@ import { errorHandler } from './backend/middleware/error';
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3002;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 
   // Body parser middlewares
   app.use(express.json());
