@@ -24,6 +24,7 @@ import {
   SocialYearPracticePage,
 } from './pages/SubjectFlowPages';
 import { LockedContent } from './components/exam/LockedContent';
+import { GlobalFooter } from './components/ui/GlobalFooter';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Menu, X, Home, BookOpen, Target, Award, BookOpenCheck,
@@ -464,7 +465,6 @@ const AppContent: React.FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Dynamic Progress Ribbon Footer */}
         <div className="progress-toast-footer">
           <div className="progress-toast-left">
             <span>Matric Prep Stable Build v2.4.0</span>
@@ -479,99 +479,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
-        {/* Overhauled Premium Footer */}
-        <footer className="enhanced-site-footer">
-          <div className="footer-top-grid">
-            {/* About Column */}
-            <div className="footer-col about-col">
-              <div className="brand-section" style={{ padding: 0, marginBottom: '1.25rem' }}>
-                <div className="brand-logo">
-                  <div className="brand-logo-inner">
-                    <span style={{ fontSize: '0.8rem' }}>🇪🇹</span>
-                  </div>
-                </div>
-                <span className="brand-name">Ethio Matric Prep</span>
-              </div>
-              <p className="footer-about-text">
-                This platform helps Ethiopian Grade 12 students prepare effectively for the National Matric Examination through structured learning resources, mock examinations, and progress tracking. Aligned with the latest Ministry of Education syllabus.
-              </p>
-              <div className="social-links-row">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-icon-btn facebook" aria-label="Facebook"><Facebook size={18} /></a>
-                <a href="https://telegram.org" target="_blank" rel="noreferrer" className="social-icon-btn telegram" aria-label="Telegram"><Send size={18} /></a>
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-icon-btn instagram" aria-label="Instagram"><Instagram size={18} /></a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-icon-btn linkedin" aria-label="LinkedIn"><Linkedin size={18} /></a>
-                <a href="https://github.com" target="_blank" rel="noreferrer" className="social-icon-btn github" aria-label="GitHub"><Github size={18} /></a>
-              </div>
-            </div>
-
-            {/* Quick Links Column */}
-            <div className="footer-col links-col">
-              <h4>Quick Links</h4>
-              <ul className="footer-links-list">
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('home')}>Home</button></li>
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('subjects')}>Subjects</button></li>
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('mock')}>Mock Exams</button></li>
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('progress')}>Dashboard / Stats</button></li>
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('planner')}>Study Planner</button></li>
-                <li><button style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={() => handleNavClick('settings')}>System Settings</button></li>
-              </ul>
-            </div>
-
-            {/* Contact Support Column */}
-            <div className="footer-col contact-col">
-              <h4>Contact Support</h4>
-              <ul className="footer-contact-list">
-                <li>
-                  <Mail size={16} className="contact-icon text-green-500" />
-                  <a href="mailto:support@ethiomatricprep.com">support@ethiomatricprep.com</a>
-                </li>
-                <li>
-                  <Phone size={16} className="contact-icon text-yellow-500" />
-                  <a href="tel:+251955123456">+251 955 123 456</a>
-                </li>
-                <li>
-                  <Clock size={16} className="contact-icon text-red-500" />
-                  <span>Mon - Sat, 8:00 AM - 6:00 PM</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Newsletter Column */}
-            <div className="footer-col newsletter-col">
-              <h4>Stay Updated</h4>
-              <p>Receive notifications for syllabus updates, exams, and keys notes directly.</p>
-              <form onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing to our newsletter!'); }} className="newsletter-form">
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  required
-                  className="newsletter-input"
-                  aria-label="Email address for newsletter"
-                />
-                <button type="submit" className="btn btn-primary newsletter-submit-btn">
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div className="animated-divider">
-            <div className="divider-glow-line"></div>
-          </div>
-
-          <div className="footer-bottom-row">
-            <p className="copyright-text">
-              © {new Date().getFullYear()} Ethio Matric Prep. Crafted in alignment with MoE Grade 12 National Curriculum.
-            </p>
-            <div className="footer-policy-links">
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('settings')}>Privacy Policy</button>
-              <span className="bullet-dot">•</span>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => handleNavClick('settings')}>Terms</button>
-              <span className="bullet-dot">•</span>
-              <span className="syllabus-stamp">Syllabus v1.2</span>
-            </div>
-          </div>
-        </footer>
+        <GlobalFooter />
       </main>
     </div>
   );
