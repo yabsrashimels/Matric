@@ -7,20 +7,6 @@ bookmarks, a study planner, and a membership/paywall for premium question sets.
 Originally exported from Google AI Studio, then extended with a full
 Express + SQLite/PostgreSQL backend.
 
-## Project structure
-
-- `frontend/` — the entire Vite/React client: `frontend/src`,
-  `frontend/index.html`, `frontend/vite.config.ts`. Vite's root is
-  `frontend/`, but production build output still lands at the project
-  root's `dist/` (see `build.outDir` in `frontend/vite.config.ts`) since
-  `server.ts` serves static files from `<project root>/dist`.
-- `backend/` — the Express API (config, controllers, routes, middleware,
-  services, utils, SQLite/Postgres schema).
-- `server.ts` (project root) — the single Node entry point. It mounts the
-  backend API at `/api`, and either runs Vite as middleware in dev
-  (pointed at `frontend/vite.config.ts`) or serves the built `dist/`
-  folder in production.
-
 ## Stack
 
 - **Frontend**: React 19 + Vite 6 + Tailwind CSS 4, React Router, Framer
@@ -66,13 +52,6 @@ Not configured (optional, app runs fine without them):
 
 ## Notes / fixes made during import setup
 
-- Moved all frontend code into `frontend/` (from the former root-level
-  `src/` + `index.html` + `vite.config.ts`). Updated `server.ts` to point
-  Vite's dev middleware at `frontend/vite.config.ts`, set the frontend
-  build's `outDir` to `../dist` so production output still lands at
-  `<project root>/dist`, and updated the root `npm run build` script to
-  pass `--config frontend/vite.config.ts`. Backend code untouched aside
-  from these path references.
 - Added `allowedHosts: true` to `vite.config.ts` — required so Replit's
   proxied preview (dynamic subdomain) can reach the Vite dev middleware.
 - Changed the server's default port from 3002 to 5000 to match Replit's
