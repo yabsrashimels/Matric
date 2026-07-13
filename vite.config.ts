@@ -5,20 +5,11 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // Explicit root so `vite build --config frontend/vite.config.ts` (invoked from the
-    // project root) still resolves index.html and src/ relative to this frontend/ folder.
-    root: __dirname,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
-    },
-    build: {
-      // Keep production build output at the project root's dist/ folder,
-      // since server.ts serves static files from `<project root>/dist` in production.
-      outDir: path.resolve(__dirname, '..', 'dist'),
-      emptyOutDir: true,
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
