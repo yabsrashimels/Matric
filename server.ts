@@ -22,6 +22,8 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     console.log('Starting development server with Vite middleware...');
     const vite = await createViteServer({
+      configFile: path.join(process.cwd(), 'frontend', 'vite.config.ts'),
+      root: path.join(process.cwd(), 'frontend'),
       server: { middlewareMode: true },
       appType: 'spa',
     });
