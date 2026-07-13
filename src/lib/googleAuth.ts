@@ -15,6 +15,7 @@ declare global {
 const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client';
 
 const getGoogleClientId = (): string => {
+     console.log("VITE_GOOGLE_CLIENT_ID =", import.meta.env.VITE_GOOGLE_CLIENT_ID);
     return String((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_GOOGLE_CLIENT_ID || '').trim();
 };
 
