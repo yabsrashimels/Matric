@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { MembershipModal } from '../components/MembershipModal';
 import { 
   Sparkles, Check, Lock, ArrowRight, ShieldCheck, 
-  Star, Award, BookOpen, AlertCircle, Coins
+  Star, Award, BookOpen, AlertCircle, Coins, Clock
 } from 'lucide-react';
 
 export const MembershipPage: React.FC = () => {
@@ -212,6 +212,28 @@ export const MembershipPage: React.FC = () => {
           border: 1px solid rgba(252, 221, 9, 0.4);
         }
 
+        .m-ribbon-comingsoon {
+          display: flex;
+          align-items: center;
+          background-color: var(--bg-tertiary);
+          color: var(--text-tertiary);
+          border: 1px solid var(--border-color);
+        }
+
+        .m-price-note {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.1rem;
+          font-size: 0.8rem;
+          color: var(--text-tertiary);
+          background-color: var(--bg-tertiary);
+          border: 1px dashed var(--border-color);
+          border-radius: 10px;
+          padding: 0.6rem 0.75rem;
+          margin: -1rem 0 1.5rem 0;
+          line-height: 1.4;
+        }
+
         /* Card Header */
         .m-plan-tier {
           font-size: 0.8rem;
@@ -348,6 +370,14 @@ export const MembershipPage: React.FC = () => {
           color: var(--text-tertiary);
           border: 2px dashed var(--border-color);
           cursor: not-allowed;
+        }
+
+        .m-btn-comingsoon {
+          background-color: var(--bg-tertiary);
+          color: var(--text-tertiary);
+          border: 2px dashed var(--border-color);
+          cursor: not-allowed;
+          opacity: 0.85;
         }
 
         /* Features Matrix Comparison */
@@ -572,7 +602,10 @@ export const MembershipPage: React.FC = () => {
           onMouseLeave={() => setHoveredPlan(null)}
           style={hoveredPlan === 'advanced' ? { transform: 'translateY(-8px)', borderColor: 'var(--ethio-yellow)', boxShadow: '0 12px 30px rgba(252, 221, 9, 0.15)' } : {}}
         >
-          <div className="m-card-ribbon m-ribbon-value">Best Value</div>
+          <div className="m-card-ribbon m-ribbon-comingsoon">
+            <Clock size={12} style={{ marginRight: '0.3rem', verticalAlign: '-1px' }} />
+            Coming Soon
+          </div>
           <div className="m-plan-tier">Absolute Mastery</div>
           <h2 className="m-plan-name">Advanced Mastery</h2>
           
@@ -581,6 +614,11 @@ export const MembershipPage: React.FC = () => {
             <span className="m-price-currency">ETB</span>
             <span className="m-price-period">/ lifetime</span>
           </div>
+
+          <p className="m-price-note">
+            <Lock size={14} style={{ marginRight: '0.4rem', verticalAlign: '-2px', flexShrink: 0 }} />
+            This plan is not available yet. It will be released in a future update.
+          </p>
 
           <ul className="m-features-list">
             <li className="m-feature-item" style={{ color: 'var(--ethio-green)', fontWeight: '600' }}>
@@ -617,18 +655,10 @@ export const MembershipPage: React.FC = () => {
             </li>
           </ul>
 
-          {activePlanId === 3 ? (
-            <button className="m-cta-btn m-btn-current" disabled={true}>
-              Active Advanced Plan ★★★★★
-            </button>
-          ) : (
-            <button 
-              className="m-cta-btn m-btn-advanced"
-              onClick={() => setSelectedPlanDetails('Advanced')}
-            >
-              Upgrade to Advanced <ArrowRight size={16} />
-            </button>
-          )}
+          <button className="m-cta-btn m-btn-comingsoon" disabled={true}>
+            <Clock size={16} />
+            Coming Soon
+          </button>
         </div>
 
       </div>
