@@ -3,10 +3,15 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import apiRouter from './backend/server';
 import { errorHandler } from './backend/middleware/error';
+import { dbReady } from './backend/config/db';
 
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+
+  // Wait for the database backend (PostgreSQL via DATABASE_URL, or the local
+  // SQLite fallback) to finish connecting/bootstrapping before accepting requests.
+  await dbReady;
 
   // Body parser middlewares
   app.use(express.json());

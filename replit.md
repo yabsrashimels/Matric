@@ -45,8 +45,11 @@ Configured as shared Replit env vars:
   deployed) or Google Sign-In will fail.**
 
 Not configured (optional, app runs fine without them):
-- `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` — only
-  needed to use PostgreSQL instead of the SQLite fallback.
+- `DATABASE_URL` — a PostgreSQL connection string (e.g. from Render). When
+  set, the backend connects to that Postgres instance with
+  `ssl: { rejectUnauthorized: false }` and does **not** fall back to
+  SQLite — a failed connection is a fatal startup error. When unset, the
+  backend automatically uses the local SQLite fallback.
 - `GEMINI_API_KEY` — left over from the AI Studio template; unused by the
   current codebase.
 

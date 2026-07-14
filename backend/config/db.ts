@@ -14,7 +14,65 @@ export interface DbPool {
 
 let dbPool: DbPool;
 
-const usePostgres = !!process.env.DB_HOST && !!process.env.DB_NAME;
+const usePostgres = !!process.env.DATABASE_URL;
+
+// Mirrors the SQLite bootstrap path: if the schema hasn't been applied to this
+// PostgreSQL database yet (fresh Render/managed Postgres instance), create it from
+// schema.sql and seed it from seed.sql. Safe to run repeatedly since both files use
+// CREATE TABLE IF NOT EXISTS / ON CONFLICT-safe inserts are guarded by try/catch below.
+const bootstrapPostgresSchema = async (pool: pg.Pool) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT to_regclass('public.users') as exists"
+    );
+    const usersTableExists = !!rows[0]?.exists;
+
+    if (!usersTableExists) {
+      console.log('PostgreSQL: users table not found. Bootstrapping schema and seed data...');
+      const schemaSqlPath = path.join(process.cwd(), 'backend', 'database', 'schema.sql');
+      const seedSqlPath = path.join(process.cwd(), 'backend', 'database', 'seed.sql');
+
+      if (fs.existsSync(schemaSqlPath)) {
+        const schemaSql = fs.readFileSync(schemaSqlPath, 'utf8');
+        await pool.query(schemaSql);
+        console.log('PostgreSQL schema applied successfully.');
+      }
+
+      if (fs.existsSync(seedSqlPath)) {
+        // seed.sql uses backslash-escaped quotes (\') for the SQLite path; standard
+        // Postgres string literals escape a quote by doubling it ('').
+        const seedSql = fs.readFileSync(seedSqlPath, 'utf8').replace(/\\'/g, "''");
+        try {
+          await pool.query(seedSql);
+          console.log('PostgreSQL seed applied successfully.');
+        } catch (seedErr: any) {
+          console.warn('PostgreSQL seed encountered an issue (may be partially applied):', seedErr.message);
+        }
+      }
+    } else {
+      const { rows: countRows } = await pool.query('SELECT COUNT(*) as count FROM users');
+      const userCount = Number(countRows[0]?.count ?? 0);
+      if (userCount === 0) {
+        console.log('PostgreSQL users table exists but is empty. Re-running seed...');
+        const seedSqlPath = path.join(process.cwd(), 'backend', 'database', 'seed.sql');
+        if (fs.existsSync(seedSqlPath)) {
+          const seedSql = fs.readFileSync(seedSqlPath, 'utf8').replace(/\\'/g, "''");
+          try {
+            await pool.query(seedSql);
+            console.log('PostgreSQL seed applied successfully.');
+          } catch (seedErr: any) {
+            console.warn('PostgreSQL seed encountered an issue (may be partially applied):', seedErr.message);
+          }
+        }
+      } else {
+        console.log(`PostgreSQL database already bootstrapped (${userCount} users found).`);
+      }
+    }
+  } catch (error: any) {
+    console.error('Failed to bootstrap PostgreSQL schema:', error.message);
+    throw error;
+  }
+};
 
 const ensureAuthVerificationColumns = async () => {
   try {
@@ -51,52 +109,64 @@ const ensureAuthVerificationColumns = async () => {
   }
 };
 
+// Resolves once the database backend (Postgres or SQLite) is ready to serve queries.
+// server.ts awaits this before accepting requests.
+let dbReadyResolve: () => void;
+let dbReadyReject: (err: Error) => void;
+export const dbReady: Promise<void> = new Promise((resolve, reject) => {
+  dbReadyResolve = resolve;
+  dbReadyReject = reject;
+});
+
 if (usePostgres) {
-  console.log('Database Config: Attempting to connect to PostgreSQL at', process.env.DB_HOST);
+  console.log('Database Config: DATABASE_URL found. Connecting to PostgreSQL...');
   const pool = new pg.Pool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
   });
 
-  // Test the connection immediately
+  // Test the connection immediately. If DATABASE_URL is set, PostgreSQL is required —
+  // there is no SQLite fallback, so a connection failure is a fatal startup error.
   pool.connect((err, client, release) => {
     if (err) {
-      console.log('Database Info: PostgreSQL is not active on ' + (process.env.DB_HOST || 'localhost') + '. Utilizing local SQLite database...', err.message);
-      initializeSQLite();
-    } else {
-      console.log('Successfully connected to PostgreSQL database!');
-      release();
-      dbPool = {
-        query: async (text: string, params?: any[]) => {
-          const res = await pool.query(text, params);
-          return {
-            rows: res.rows,
-            rowCount: res.rowCount || 0,
-          };
-        },
-        isSQLite: false,
-      };
+      console.error('Database Error: Failed to connect to PostgreSQL via DATABASE_URL.', err.message);
+      dbReadyReject(err);
+      return;
+    }
 
-      void ensureAuthVerificationColumns();
+    console.log('Connected to PostgreSQL');
+    release();
+    dbPool = {
+      query: async (text: string, params?: any[]) => {
+        const res = await pool.query(text, params);
+        return {
+          rows: res.rows,
+          rowCount: res.rowCount || 0,
+        };
+      },
+      isSQLite: false,
+    };
+
+    (async () => {
+      await bootstrapPostgresSchema(pool);
+      await ensureAuthVerificationColumns();
 
       // Ensure profile_picture column exists on PG
-      pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT;').catch(e => {
+      try {
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT;');
+      } catch (e: any) {
         console.warn('Could not alter PG users table:', e.message);
-      });
-    }
+      }
+
+      dbReadyResolve();
+    })().catch((initErr) => dbReadyReject(initErr));
   });
 } else {
-  console.log('Database Config: No DB_HOST env found. Initializing local SQLite database...');
-  initializeSQLite();
+  console.log('Database Config: No DATABASE_URL env found. Initializing local SQLite database...');
+  initializeSQLite(dbReadyResolve, dbReadyReject);
 }
 
-function initializeSQLite() {
+function initializeSQLite(onReady?: () => void, onError?: (err: Error) => void) {
   const dbDir = path.join(process.cwd(), 'backend', 'database');
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
@@ -322,6 +392,8 @@ function initializeSQLite() {
       // Ensure newer auth-verification columns exist even on older SQLite databases
       // that were bootstrapped before those columns were introduced.
       await ensureAuthVerificationColumns();
+
+      onReady?.();
     } catch (error: any) {
       console.error('Failed to initialize SQLite database:', error.message);
       if (error.message.includes('malformed') || error.message.includes('corrupt') || error.message.includes('CORRUPT')) {
@@ -336,7 +408,9 @@ function initializeSQLite() {
             console.error('Failed to delete corrupted database file:', unlinkErr.message);
           }
         }
-        initializeSQLite();
+        initializeSQLite(onReady, onError);
+      } else {
+        onError?.(error);
       }
     }
   })();
