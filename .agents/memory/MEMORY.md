@@ -1,0 +1,1 @@
+- [Nested package.json breaks ESM default imports](nested-package-json-esm-interop.md) — a package.json in a subfolder without "type":"module" silently flips that folder to CJS, corrupting default-export interop.
