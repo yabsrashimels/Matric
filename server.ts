@@ -1,5 +1,11 @@
-import express from 'express';
+// 1. Force dotenv to run first by importing it and executing it via a side-effect
+import dotenv from 'dotenv';
 import path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') }); 
+// ^ Note: If your variables are in '.env' instead of '.env.local', change the filename above.
+
+// 2. NOW it is safe to import your backend code because process.env is fully populated
+import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import apiRouter from './backend/server';
 import { errorHandler } from './backend/middleware/error';

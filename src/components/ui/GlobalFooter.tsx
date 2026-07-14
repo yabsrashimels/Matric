@@ -66,11 +66,11 @@ export const GlobalFooter: React.FC = () => {
                     <ul className="footer-contact-list">
                         <li>
                             <Mail size={16} className="contact-icon" />
-                            <a href="mailto:support@ethiomatricprep.com">support@ethiomatricprep.com</a>
+                            <a href="mailto:support@ethiomatricprep.com">yabuy4728@gmail.com</a>
                         </li>
                         <li>
                             <Phone size={16} className="contact-icon" />
-                            <a href="tel:+251955123456">+251 955 123 456</a>
+                            <a href="tel:+251955123456">+251 900 468 152</a>
                         </li>
                         <li>
                             <Clock size={16} className="contact-icon" />
@@ -82,7 +82,7 @@ export const GlobalFooter: React.FC = () => {
                 <div className="footer-col newsletter-col">
                     <h4>Stay Updated</h4>
                     <p>Receive notifications for syllabus updates, exams, and study notes directly in your inbox.</p>
-                    <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+                    {/* <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
                         <input
                             type="email"
                             placeholder="Enter email address"
@@ -93,7 +93,7 @@ export const GlobalFooter: React.FC = () => {
                         <button type="submit" className="btn btn-primary newsletter-submit-btn">
                             Subscribe <ArrowRight size={16} />
                         </button>
-                    </form>
+                    </form> */}
                 </div>
             </div>
 
@@ -103,7 +103,7 @@ export const GlobalFooter: React.FC = () => {
 
             <div className="footer-bottom-row">
                 <p className="copyright-text">
-                    © {new Date().getFullYear()} Ethio Matric Prep. Crafted for Ethiopia’s Grade 12 national curriculum.
+                    © {new Date().getFullYear()} Ethio Matric Prep. Crafted for Ethiopia’s Grade 12 national curriculum.made by Yeabsra 
                 </p>
                 <div className="footer-policy-links">
                     <button type="button" onClick={() => handleNavigate('/settings')}>Privacy Policy</button>

@@ -145,7 +145,7 @@ export const LoginPage: React.FC = () => {
           </p>
           <div className="admin-demo-tip" style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '4px', fontSize: '0.75rem', border: '1px dashed var(--ethio-red)' }}>
             <strong>Demo access:</strong><br />
-            • Admin: yabsrashimels531@gmail.com / Yeabsra@123<br />
+            {/* • Admin: yabsrashimels531@gmail.com / Yeabsra@123<br /> */}
             • Student: student@matricprep.com / password123
           </div>
         </div>
