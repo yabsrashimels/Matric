@@ -34,7 +34,7 @@ const resolveJwtSecret = (): string => {
   }
 };
 
-const JWT_SECRET = resolveJwtSecret();
+export const JWT_SECRET = resolveJwtSecret();
 
 export const generateVerificationCode = (): string => {
   return crypto.randomInt(0, 1000000).toString().padStart(6, '0');

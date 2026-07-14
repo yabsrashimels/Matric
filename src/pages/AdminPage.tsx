@@ -877,7 +877,7 @@ export const AdminPage: React.FC = () => {
                   <h4>Student Database Registry</h4>
                   <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>Manage profiles, toggle activation states, suspend/activate, or manually update student billing memberships.</p>
                 </div>
-                <div className="search-box-wrapper" style={{ position: 'relative', width: '300px' }}>
+                <div className="search-box-wrapper" style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
                   <input
                     type="text"
                     placeholder="Search name, school, email..."
@@ -1410,7 +1410,7 @@ export const AdminPage: React.FC = () => {
                       <h3>{editingQuestion ? 'Edit Quiz Question' : 'Add Question To Active Curriculum Pool'}</h3>
                       <button onClick={() => setShowQuestionModal(false)} className="close-modal-btn"><X size={18} /></button>
                     </div>
-                    <form onSubmit={handleSaveQuestion} style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <form onSubmit={handleSaveQuestion} className="admin-responsive-grid-2col" style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
                       <div className="form-group">
                         <label>Subject *</label>
                         <select value={questionForm.subject_id} onChange={e => {
@@ -1560,7 +1560,7 @@ export const AdminPage: React.FC = () => {
 
             <div className="user-audit-body" style={{ marginTop: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Personal */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px' }}>
+              <div className="admin-responsive-grid-2col" style={{ display: 'grid', gap: '1rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Full Name</span>
                   <p style={{ margin: '0.2rem 0', fontWeight: 'bold' }}>{selectedUserDetail.user.first_name} {selectedUserDetail.user.last_name}</p>
@@ -1613,7 +1613,7 @@ export const AdminPage: React.FC = () => {
               {/* Learning stats progress summary */}
               <div className="audit-sub-section">
                 <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem' }}>Student Answer Progress Metrics</h5>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', background: 'var(--bg-primary)', padding: '0.75rem', borderRadius: '6px', textAlign: 'center' }}>
+                <div className="admin-responsive-grid-3col" style={{ display: 'grid', gap: '0.75rem', background: 'var(--bg-primary)', padding: '0.75rem', borderRadius: '6px', textAlign: 'center' }}>
                   <div>
                     <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>XP Accumulated</span>
                     <p style={{ margin: '0.25rem 0', fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--ethio-green)' }}>{selectedUserDetail.progress?.xp || 0}</p>

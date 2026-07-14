@@ -434,6 +434,84 @@ export const MembershipPage: React.FC = () => {
           text-align: center;
           width: 15%;
         }
+
+        /* Small phone screens: tighten spacing and typography so nothing overflows
+           or gets cut off, and stack the badge row so long labels can wrap. */
+        @media (max-width: 640px) {
+          .membership-container {
+            padding: 1rem 0.25rem;
+            overflow-x: hidden;
+          }
+
+          .m-header-title {
+            font-size: 2rem;
+          }
+
+          .m-header-subtitle {
+            font-size: 1rem;
+            padding: 0 0.5rem;
+          }
+
+          .m-active-badge-container {
+            flex-wrap: wrap;
+          }
+
+          .m-active-badge {
+            font-size: 0.75rem;
+            text-align: center;
+            white-space: normal;
+          }
+
+          .m-progress-section {
+            padding: 1.25rem 1rem;
+          }
+
+          .m-progress-header {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+          }
+
+          .m-plan-card {
+            padding: 1.5rem 1.25rem;
+          }
+
+          .m-card-ribbon {
+            position: static;
+            display: inline-flex;
+            margin-bottom: 0.75rem;
+          }
+
+          .m-matrix-section {
+            padding: 1.25rem 0.75rem;
+          }
+
+          .m-matrix-title {
+            font-size: 1.25rem;
+          }
+
+          .m-table th, .m-table td {
+            padding: 0.85rem 0.6rem;
+            font-size: 0.85rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .m-header-title {
+            font-size: 1.65rem;
+          }
+
+          .m-price-amount {
+            font-size: 2rem;
+          }
+
+          .m-plan-name {
+            font-size: 1.4rem;
+          }
+
+          .m-feature-item {
+            font-size: 0.85rem;
+          }
+        }
       `}</style>
 
       {/* Header section */}

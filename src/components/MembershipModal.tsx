@@ -337,6 +337,56 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ plan, onClose 
           color: var(--ethio-red);
           border: 1px solid rgba(218, 18, 26, 0.25);
         }
+
+        /* Small phone screens: shrink padding/typography and stack the gateway
+           buttons so long labels ("Telebirr Wallet"/"CBE Birr") never overflow. */
+        @media (max-width: 640px) {
+          .custom-m-overlay {
+            padding: 0.75rem;
+          }
+
+          .custom-m-modal {
+            border-radius: 20px;
+            max-height: 95vh;
+          }
+
+          .custom-m-header {
+            padding: 2rem 1.25rem 1.25rem 1.25rem;
+          }
+
+          .custom-m-title {
+            font-size: 1.4rem;
+          }
+
+          .custom-m-price {
+            font-size: 0.95rem;
+          }
+
+          .custom-m-body {
+            padding: 1.25rem;
+          }
+
+          .custom-m-checkout-box {
+            padding: 1rem;
+          }
+
+          .custom-m-gateway-row {
+            grid-template-columns: 1fr;
+          }
+
+          .custom-m-gateway-btn {
+            font-size: 0.85rem;
+            white-space: normal;
+            text-align: center;
+          }
+
+          .custom-m-close {
+            top: 0.85rem;
+            right: 0.85rem;
+            width: 32px;
+            height: 32px;
+          }
+        }
       `}</style>
 
       <div className="custom-m-modal" onClick={(e) => e.stopPropagation()} id="membership-modal-content">

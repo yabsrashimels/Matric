@@ -3289,6 +3289,23 @@ input:checked+.slider:before {
   background-color: var(--bg-secondary);
 }
 
+/* Grid helpers for fixed-column layouts (question form, audit modal panels)
+   that need to collapse to a single column on small screens. */
+.admin-responsive-grid-2col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.admin-responsive-grid-3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+  .admin-responsive-grid-2col,
+  .admin-responsive-grid-3col {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Custom Table Design */
 .admin-table {
   width: 100%;
@@ -3421,10 +3438,26 @@ input:checked+.slider:before {
   background-color: var(--card-bg);
   border-radius: 16px;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border-color);
   padding: 1.75rem;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 480px) {
+  .admin-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .admin-modal {
+    padding: 1.25rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
 }
 
 .modal-header {
