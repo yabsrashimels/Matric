@@ -14,8 +14,8 @@ export interface DbPool {
 
 let dbPool: DbPool;
 
-const usePostgres = !!process.env.DB_HOST && !!process.env.DB_NAME;
-
+//const usePostgres = !!process.env.DB_HOST && !!process.env.DB_NAME;
+const usePostgres = !!process.env.DATABASE_URL;
 const ensureAuthVerificationColumns = async () => {
   try {
     if (!dbPool) return;
@@ -53,16 +53,23 @@ const ensureAuthVerificationColumns = async () => {
 
 if (usePostgres) {
   console.log('Database Config: Attempting to connect to PostgreSQL at', process.env.DB_HOST);
+  // const pool = new pg.Pool({
+  //   host: process.env.DB_HOST,
+  //   port: parseInt(process.env.DB_PORT || '5432'),
+  //   user: process.env.DB_USER,
+  //   password: process.env.DB_PASSWORD,
+  //   database: process.env.DB_NAME,
+  //   max: 20,
+  //   idleTimeoutMillis: 30000,
+  //   connectionTimeoutMillis: 2000,
+  // });
   const pool = new pg.Pool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  });
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
   // Test the connection immediately
   pool.connect((err, client, release) => {
